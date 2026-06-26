@@ -1,12 +1,12 @@
 # dailyarxiv
 
-`dailyarxiv` is an email subscription service for personalized arXiv astro-ph digests.
+`dailyarxiv` is an email-based subscription service for personalized arXiv astro-ph digests.
 
-Subscribers do not install anything. They send one subscription email, then receive focused daily summaries when relevant astro-ph papers appear.
+No local installation is required for subscribers. A subscription is created by sending a fixed-format email from the address that should receive the digest.
 
 ## Subscribe
 
-Send an email from the address where you want to receive the digest.
+Send a subscription request to:
 
 ```text
 To: dailyarxiv@agent.qq.com
@@ -17,11 +17,11 @@ dark matter; little red dot; stellar streams; dwarf galaxies
 
 ## Email Format
 
-- The subject must be exactly `Subscribe to dailyarxiv`.
-- The body is a list of interests separated by semicolons.
-- Interests can be research directions, keywords, fixed objects, surveys, methods, or author names.
-- The sender address is used as the delivery address.
-- Sending a new subscription email from the same address updates the profile.
+- Subject: exactly `Subscribe to dailyarxiv`
+- Body: semicolon-separated interests
+- Accepted interest terms: research directions, keywords, fixed objects, surveys, methods, or author names
+- Delivery address: the email address used to send the subscription request
+- Profile updates: sending a new subscription request from the same address replaces the previous interest profile
 
 Examples:
 
@@ -41,7 +41,9 @@ After a subscription is accepted, the service sends a confirmation receipt.
 
 ## What You Receive
 
-On arXiv astro-ph mailing days, `dailyarxiv` reads the daily arXiv email and selects papers matching each subscriber's interests. The summary is written in Chinese by default, sent as a formatted HTML email with a plain-text fallback, and follows a stable research-note structure:
+On arXiv astro-ph mailing days, `dailyarxiv` reads the official daily email and selects papers that match each subscriber profile. Digests are written in Chinese by default and delivered as formatted HTML email with a plain-text fallback.
+
+Each selected paper follows a stable research-note structure:
 
 - paper information and read priority
 - 30-second takeaways
@@ -55,7 +57,7 @@ On arXiv astro-ph mailing days, `dailyarxiv` reads the daily arXiv email and sel
 - relation to your stated interests
 - recommended reading positions
 
-The goal is not to translate abstracts mechanically. The service first uses the subscriber profile to recall candidate papers, then uses Codex to judge semantic relevance. Papers that pass semantic screening are read from the arXiv full text/PDF before the subscriber summary is written.
+The service does not mechanically translate abstracts. The workflow first recalls candidate papers from the subscriber profile, then uses Codex for semantic relevance screening. Papers that pass screening are read from the arXiv full text/PDF before the final subscriber summary is written.
 
 ## Schedule
 
@@ -66,17 +68,22 @@ arXiv astro-ph daily emails usually arrive Monday-Friday, Beijing time, between 
 - 12:00 Beijing time for subscription requests and the main daily arXiv run
 - 14:00 Beijing time for one fallback check if no daily email was processed at noon
 
-If arXiv does not send an astro-ph daily email that day, the service stops for that day.
+If arXiv does not send an astro-ph daily email that day, or if no paper matches a subscriber profile, no empty digest is sent.
 
 ## Status
 
-This is an early private service. The current backend is built around:
+This repository is public. The service is currently in an early operational stage and is maintained for email-based subscription use.
+
+The production workflow is built around:
 
 - `dailyarxiv@agent.qq.com` for inbound subscription and arXiv daily mail
-- Codex for semantic triage and summaries
+- Codex for semantic triage and full-text summaries
 - SMTP for automatic outgoing receipts and digests
 
-Operational notes for maintainers live in [`docs/OPERATIONS.md`](docs/OPERATIONS.md). Architecture notes live in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+## Maintainer Documentation
+
+- [`docs/OPERATIONS.md`](docs/OPERATIONS.md): mailbox, scheduling, SMTP, and manual run procedures
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md): parsing, triage, rendering, and delivery architecture
 
 ## Contact
 

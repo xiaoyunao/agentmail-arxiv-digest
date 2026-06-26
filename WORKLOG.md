@@ -2,6 +2,21 @@
 
 ## 2026-06-26
 
+- Task: Rewrite public README with more formal subscriber-facing language.
+- Files changed: `README.md`, `WORKLOG.md`.
+- Commands run:
+  - `rg -n "\\bthey\\b|\\bThey\\b|private|follow-up questions|install anything|produce a more useful|abstract translation|early private" README.md`
+  - `python -m pytest`
+  - `python -m py_compile arxiv_digest/*.py`
+- Key findings:
+  - README still had informal subscriber wording and an outdated `early private service` status.
+  - README now describes the repository as public, presents subscription workflow without local-deployment framing, and separates maintainer documentation from subscriber instructions.
+  - Empty-digest behavior is now stated explicitly without conversational wording.
+- Validation result: `pytest` passed 25 tests; `py_compile` passed.
+- Remaining issues:
+  - Need GitHub page refresh to show the updated README and metadata.
+- Next step: Continue with the first real direct arXiv daily production run.
+
 - Task: Switch receipt and digest delivery to formatted HTML email with text fallback.
 - Files changed: `arxiv_digest/smtp_sender.py`, `arxiv_digest/mail_cli.py`, `arxiv_digest/subscriptions.py`, `arxiv_digest/render.py`, `arxiv_digest/cli.py`, `tests/test_smtp_sender.py`, `tests/test_subscriptions.py`, `tests/test_render.py`, `README.md`, `docs/OPERATIONS.md`, `docs/ARCHITECTURE.md`, `PLAN.md`, `WORKLOG.md`; updated noon and 14:00 fallback automations.
 - Commands run:
