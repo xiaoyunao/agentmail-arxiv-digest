@@ -43,6 +43,13 @@ OPENAI_API_KEY=... python -m arxiv_digest.cli \
   --output digest.md
 ```
 
+Or put credentials in a local `.env` file, which is ignored by git:
+
+```bash
+cp .env.example .env
+chmod 600 .env
+```
+
 Override the triage model if needed:
 
 ```bash

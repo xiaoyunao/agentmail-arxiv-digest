@@ -3,11 +3,12 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
+from .env import load_env_file
+from .llm import DEFAULT_TRIAGE_MODEL
 from .parser import parse_daily_email
 from .profiles import InterestProfile
 from .ranker import rank_papers, recall_papers
 from .render import render_markdown_digest, render_triaged_markdown_digest
-from .llm import DEFAULT_TRIAGE_MODEL
 from .triage import triage_with_heuristics
 
 
@@ -31,6 +32,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
+    load_env_file()
     args = build_parser().parse_args(argv)
     mail_text = Path(args.mail_file).read_text(encoding="utf-8")
     profile = InterestProfile.from_json_file(args.profile)

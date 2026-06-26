@@ -2,6 +2,21 @@
 
 ## 2026-06-26
 
+- Task: Add local `.env` support for OpenAI API credentials.
+- Files changed: `.gitignore`, `.env.example`, `arxiv_digest/env.py`, `arxiv_digest/cli.py`, `README.md`, `WORKLOG.md`.
+- Commands run:
+  - `chmod 600 .env`
+  - `git status --short --ignored .env .gitignore`
+  - `python -m pytest`
+  - `python -m py_compile arxiv_digest/*.py`
+- Key findings:
+  - `.env` is ignored by git and has owner-only file permissions.
+  - CLI now loads `.env` automatically before OpenAI API calls.
+- Validation result: `pytest` passed 4 tests; `py_compile` passed; `.env` is ignored by git.
+- Remaining issues:
+  - API key was shared in chat; rotate it in the OpenAI dashboard after setup.
+- Next step: Run tests and commit tracked `.env` support files only.
+
 - Task: Add AI relevance triage layer before detailed arXiv summaries.
 - Files changed: `arxiv_digest/triage.py`, `arxiv_digest/llm.py`, `arxiv_digest/ranker.py`, `arxiv_digest/profiles.py`, `arxiv_digest/render.py`, `arxiv_digest/cli.py`, `profiles.galactic.example.json`, `docs/ARCHITECTURE.md`, `README.md`, `PLAN.md`, `tests/test_ranker.py`, `WORKLOG.md`.
 - Commands run:
