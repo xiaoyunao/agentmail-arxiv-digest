@@ -1,9 +1,24 @@
 [project]
 name = "agentmail-arxiv-digest"
 version = "0.1.0"
-description = "Parse arXiv daily mail and build personalized astronomy digests."
+description = "Mailbox-driven personalized arXiv astro-ph digests."
+readme = "README.md"
 requires-python = ">=3.10"
+license = {file = "LICENSE"}
+authors = [
+  {name = "Yunao Xiao"}
+]
 dependencies = []
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering :: Astronomy",
+]
 
 [project.scripts]
 arxiv-digest = "arxiv_digest.cli:main"

@@ -47,6 +47,34 @@ def parse_subscription_request(body: str, sender_email: str) -> InterestProfile:
     )
 
 
+def subscription_receipt_subject() -> str:
+    return "dailyarxiv 订阅成功"
+
+
+def render_subscription_receipt(profile: InterestProfile) -> str:
+    interests = "; ".join(profile.research_interests)
+    return f"""你的 dailyarxiv 订阅已经生效。
+
+订阅邮箱：{profile.recipient}
+订阅方向：{interests}
+
+之后工作日如收到 arXiv astro-ph daily，系统会按你的方向筛选文章，并发送中文科研笔记式总结。
+
+修改订阅：
+请继续用这个邮箱发送邮件到 dailyarxiv@agent.qq.com。
+标题固定写：
+Subscribe to dailyarxiv
+
+正文用英文分号分隔方向、关键词、固定对象或作者名，例如：
+dark matter; little red dot; yunao xiao; stellar streams; dwarf galaxies
+
+说明：
+- 发件人邮箱就是接收日报的邮箱。
+- 关键词只是召回线索，最终会由 Codex 根据论文题目、作者、分类和摘要判断是否真正相关。
+- 如果当天 arXiv 没有发送 astro-ph daily，或者没有匹配文章，就不会强行生成无内容总结。
+"""
+
+
 def save_profile(profile: InterestProfile, directory: str | Path = DEFAULT_SUBSCRIBER_DIR) -> Path:
     target_dir = Path(directory)
     target_dir.mkdir(parents=True, exist_ok=True)

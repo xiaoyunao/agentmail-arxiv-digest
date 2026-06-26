@@ -2,6 +2,24 @@
 
 ## 2026-06-26
 
+- Task: Add unattended outbound SMTP path and formalize GitHub-ready project files.
+- Files changed: `.env.example`, `.github/workflows/tests.yml`, `CONTRIBUTING.md`, `LICENSE`, `README.md`, `docs/ARCHITECTURE.md`, `docs/OPERATIONS.md`, `arxiv_digest/mail_cli.py`, `arxiv_digest/smtp_sender.py`, `arxiv_digest/subscriptions.py`, `tests/test_smtp_sender.py`, `tests/test_subscriptions.py`, `PLAN.md`, `WORKLOG.md`.
+- Commands run:
+  - `git status -sb`
+  - `gh --version`
+  - `gh auth status`
+  - `python -m pytest`
+  - `python -m py_compile arxiv_digest/*.py`
+- Key findings:
+  - Agent Mail write operations require confirmation tokens, so they cannot be the unattended outbound backend.
+  - The local GitHub CLI is authenticated as `xiaoyunao`.
+  - The repository has no GitHub remote yet.
+- Validation result: `pytest` passed 15 tests; `py_compile` passed; scheduled automations were updated to use SMTP for outgoing mail.
+- Remaining issues:
+  - Need real SMTP credentials in local `.env`.
+  - Need create and push a private GitHub repository.
+- Next step: Commit, create GitHub remote, push, and configure production SMTP credentials.
+
 - Task: Stabilize daily digest format, simplify subscriber email format, and add runtime cleanup.
 - Files changed: `arxiv_digest/summary.py`, `arxiv_digest/render.py`, `arxiv_digest/codex_backend.py`, `arxiv_digest/subscriptions.py`, `arxiv_digest/mail_cli.py`, `arxiv_digest/cleanup.py`, `tests/test_subscriptions.py`, `tests/test_cleanup.py`, `README.md`, `docs/ARCHITECTURE.md`, `PLAN.md`, `WORKLOG.md`.
 - Commands run:

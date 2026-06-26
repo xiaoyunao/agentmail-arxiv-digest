@@ -14,3 +14,4 @@ codex_summaries*.json
 .arxiv_digest_cache.sqlite3-*
 .env
 .env.*
+!.env.example

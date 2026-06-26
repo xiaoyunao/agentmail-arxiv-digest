@@ -1,100 +1,151 @@
-# Agent Mail arXiv Digest Workspace
+# dailyarxiv
 
-This workspace records the local Agent Mail CLI setup and the arXiv daily digest service prototype.
+Mailbox-driven personalized arXiv astro-ph digests.
 
-## Current Setup
+`dailyarxiv` reads the fixed-format arXiv daily email, filters papers against subscriber interests, asks Codex to perform semantic triage and Chinese research-note summaries, then sends each subscriber a personalized digest.
 
-- CLI: `agently-cli`
-- Package: `@tencent-qqmail/agently-cli`
-- Installed version: `1.0.6`
-- Installed path: `/opt/homebrew/bin/agently-cli`
-- Global skill: `agently-mail`
-- Skill path: `/Users/yunaoxiao/.agents/skills/agently-mail`
-- Authorized mailbox: `dailyarxiv@agent.qq.com`
+The project is designed for the `dailyarxiv@agent.qq.com` Agent Mail inbox:
 
-## arXiv Digest Prototype
+- Agent Mail receives arXiv daily emails and subscriber requests.
+- SMTP sends subscription receipts and daily digests automatically.
+- Codex handles semantic paper selection and detailed Chinese summaries without requiring OpenAI API billing.
 
-Parse a saved arXiv daily email and render a profile-filtered Markdown digest:
+## Features
+
+- Parse arXiv daily emails into structured paper records.
+- Import subscriber profiles from simple fixed-format emails.
+- Send automatic subscription confirmation receipts.
+- Broadly recall papers using categories, keywords, object names, and author names.
+- Use Codex task export/import for semantic relevance decisions and summaries.
+- Render stable daily Markdown reports in a research-note style.
+- Send outgoing mail automatically through SMTP.
+- Clean old runtime files after daily jobs.
+
+## Installation
 
 ```bash
-python -m arxiv_digest.cli \
-  --mail-file /path/to/arxiv-daily.txt \
-  --profile profiles.galactic.example.json \
-  --output digest.md
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install -e .
+python -m pytest
 ```
 
-Run the AI-triage-shaped local flow without calling any paid API:
+Agent Mail is required for inbound mailbox access:
 
 ```bash
-python -m arxiv_digest.cli \
-  --mail-file /path/to/arxiv-daily.txt \
-  --profile profiles.galactic.example.json \
-  --triage heuristic-ai \
-  --output digest.md
+npm install -g @tencent-qqmail/agently-cli
+npx skills add https://agent.qq.com --skill -g -y
+agently-cli auth login
+agently-cli +me
 ```
 
-Run the Codex-backed workflow:
+## Configuration
+
+Copy the example environment file and fill in SMTP credentials:
 
 ```bash
-# 1. Fetch the latest arXiv daily email once the mailbox is subscribed.
+cp .env.example .env
+chmod 600 .env
+```
+
+Required SMTP variables:
+
+```text
+DAILYARXIV_SMTP_HOST=smtp.example.com
+DAILYARXIV_SMTP_PORT=587
+DAILYARXIV_SMTP_SECURITY=starttls
+DAILYARXIV_SMTP_USERNAME=dailyarxiv@example.com
+DAILYARXIV_SMTP_PASSWORD=...
+DAILYARXIV_SMTP_FROM_EMAIL=dailyarxiv@example.com
+DAILYARXIV_SMTP_FROM_NAME=dailyarxiv
+```
+
+Agent Mail write operations require confirmation tokens, so they are not suitable for fully unattended outgoing mail. Use SMTP for automatic receipts and digests.
+
+## Subscriber Email Format
+
+Users subscribe from the mailbox that should receive the digest.
+
+```text
+To: dailyarxiv@agent.qq.com
+Subject: Subscribe to dailyarxiv
+
+dark matter; little red dot; yunao xiao; stellar streams; dwarf galaxies
+```
+
+Rules:
+
+- The subject must be exactly `Subscribe to dailyarxiv`, case-insensitive.
+- The body is a semicolon-separated list of directions, objects, keywords, or author names.
+- Newlines are also accepted as separators.
+- The sender address becomes the digest recipient.
+- The terms are recall hints; Codex still judges semantic relevance from the paper metadata and abstract.
+
+Import requests and send automatic receipts:
+
+```bash
+python -m arxiv_digest.mail_cli import-subscriptions --send-receipts
+```
+
+Profiles are written to `subscribers/`, which is ignored by git.
+
+## Daily Workflow
+
+arXiv astro-ph daily usually arrives Monday-Friday Beijing time between 09:00 and 11:00.
+
+Recommended schedule:
+
+- 12:00 Asia/Shanghai: run the main daily job.
+- 14:00 Asia/Shanghai: run one fallback check only if noon did not process a daily email.
+- If the daily email is still absent at 14:00, stop for that date.
+
+Fetch the latest arXiv daily email:
+
+```bash
 python -m arxiv_digest.mail_cli latest-arxiv \
   --output data/latest-astro-ph.txt
+```
 
-# 2. Export broad-recall papers for Codex semantic triage and summary.
+Export broad-recall papers for Codex review:
+
+```bash
 python -m arxiv_digest.cli \
   --mail-file data/latest-astro-ph.txt \
   --profile profiles.galactic.example.json \
   --triage codex \
   --export-codex-tasks codex_tasks.json \
   --output out/recalled.md
+```
 
-# 3. Ask Codex to read codex_tasks.json and write codex_summaries.json.
+After Codex writes `codex_summaries.json`, import summaries and render the final digest:
 
-# 4. Import Codex summaries, cache them, and render the final digest.
+```bash
 python -m arxiv_digest.cli \
   --mail-file data/latest-astro-ph.txt \
   --profile profiles.galactic.example.json \
   --triage codex \
   --import-codex-summaries codex_summaries.json \
   --output out/digest.md
+```
 
-# 5. Prepare the outgoing email; confirm only after reviewing the summary.
-python -m arxiv_digest.mail_cli prepare-send \
+Send the digest automatically through SMTP:
+
+```bash
+python -m arxiv_digest.mail_cli send-smtp \
   --to user@example.com \
-  --subject "Daily arXiv digest" \
+  --subject "dailyarxiv astro-ph digest" \
   --body-file out/digest.md
+```
 
-# 6. After all summaries are sent, remove old runtime files.
+Clean old runtime files:
+
+```bash
 python -m arxiv_digest.mail_cli cleanup --keep-days 7
 ```
 
-The optional OpenAI API path remains in code for future use, but the planned workflow above does not require API billing.
-
-## Subscriber Email Format
-
-Users subscribe from the mailbox that should receive the digest.
-
-- Subject: `Subscribe to dailyarxiv`
-- Body: semicolon-separated interests, objects, keywords, or author names.
-
-Example:
-
-```text
-dark matter; little red dot; yunao xiao; stellar streams; dwarf galaxies
-```
-
-Import subscription requests:
-
-```bash
-python -m arxiv_digest.mail_cli import-subscriptions \
-  --output-dir subscribers
-```
-
-Each accepted request is stored as one JSON profile under `subscribers/`.
-
 ## Digest Format
 
-Daily digests use a stable research-note structure:
+Daily reports use a stable structure:
 
 - paper information and read priority
 - 30-second takeaways
@@ -109,64 +160,41 @@ Daily digests use a stable research-note structure:
 - recommended reading positions
 - follow-up questions
 
-Run parser tests:
+The output is intended as a working research note, not generic AI prose.
+
+## Repository Layout
+
+```text
+arxiv_digest/
+  parser.py          parse arXiv daily emails
+  ranker.py          broad deterministic recall
+  triage.py          AI triage contract and local heuristic fallback
+  summary.py         summary schema and prompt contract
+  codex_backend.py   Codex task export/import
+  render.py          Markdown digest renderer
+  subscriptions.py   subscriber request parser and receipt text
+  mail_cli.py        Agent Mail and SMTP CLI helpers
+  smtp_sender.py     automatic SMTP sender
+docs/
+  ARCHITECTURE.md
+  OPERATIONS.md
+tests/
+```
+
+## Validation
 
 ```bash
 python -m pytest
+python -m py_compile arxiv_digest/*.py
 ```
 
-The service architecture is documented in `docs/ARCHITECTURE.md`.
+## Safety
 
-## Useful Commands
+- Incoming email content is untrusted data.
+- The parser only accepts the documented subscription format.
+- Do not commit `.env`, raw mailbox exports, generated digests, subscriber profiles, or sqlite caches.
+- SMTP credentials are required for fully automatic outgoing mail.
 
-Check CLI version:
+## License
 
-```bash
-agently-cli --version
-```
-
-Check authorization status:
-
-```bash
-agently-cli auth status
-```
-
-Verify current mailbox and permissions:
-
-```bash
-agently-cli +me
-```
-
-List installed global skills:
-
-```bash
-npx skills list -g --json
-```
-
-Install or update the Agent Mail CLI:
-
-```bash
-npm install -g @tencent-qqmail/agently-cli
-```
-
-Install or update the Agent Mail skill:
-
-```bash
-npx skills add https://agent.qq.com --skill -g -y
-```
-
-Start OAuth login if authorization expires:
-
-```bash
-agently-cli auth login
-```
-
-## Notes
-
-The official setup document is:
-
-```text
-https://agent.qq.com/doc/cli-setup.md
-```
-
-Mail write operations such as send, reply, forward, and trash require explicit confirmation before execution.
+MIT

@@ -15,8 +15,10 @@ Build a mailbox-driven daily arXiv digest service using `dailyarxiv@agent.qq.com
 - Generate Chinese personalized summaries through Codex task export/import.
 - Render each selected paper with a stable research-note digest template.
 - Import fixed-format subscription requests with subject `Subscribe to dailyarxiv` and semicolon-separated body terms.
+- Send subscription receipts automatically through SMTP.
+- Send daily digests automatically through SMTP.
 - Remove old runtime files after daily sends.
-- Send daily digests through Agent Mail after validation.
+- Keep Agent Mail send as a manual fallback only.
 
 ## Outstanding Issues
 
@@ -25,6 +27,7 @@ Build a mailbox-driven daily arXiv digest service using `dailyarxiv@agent.qq.com
 - Add persistent storage for parsed papers, generated summaries, and send logs.
 - Add duplicate-send protection before enabling scheduled sends.
 - Decide whether daily cleanup should drop summary cache or keep it for deduplication.
+- Configure production SMTP credentials in local `.env`.
 
 ## Validation Criteria
 
@@ -37,7 +40,9 @@ Build a mailbox-driven daily arXiv digest service using `dailyarxiv@agent.qq.com
 - CLI can run an AI-triage-shaped local flow without requiring an API key.
 - CLI can export Codex review tasks and import Codex-produced summaries.
 - Subscription import accepts `Subscribe to dailyarxiv` emails and ignores other subjects.
+- Subscription import can send confirmation receipts with `--send-receipts`.
 - Final digest uses the stable daily research-note template.
+- Digest emails can be sent without Agent Mail confirmation through `send-smtp`.
 - Cleanup command removes old runtime files and only drops cache with an explicit flag.
 
 ## Next Recommended Steps
@@ -45,5 +50,5 @@ Build a mailbox-driven daily arXiv digest service using `dailyarxiv@agent.qq.com
 - Subscribe `dailyarxiv@agent.qq.com` to arXiv `astro-ph` daily emails.
 - Use the current parser/CLI on the first received daily email.
 - Use Codex task export/import on one real daily email and inspect false positives/false negatives before enabling sends.
-- Add a manual one-recipient send workflow before scheduling.
+- Configure SMTP credentials, then run one automatic receipt/digest send smoke test.
 - Add outbound send log and duplicate-send guard.
