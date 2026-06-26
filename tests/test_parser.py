@@ -33,3 +33,13 @@ def test_parse_daily_email_extracts_wrapped_fields():
     assert paper.categories == ("astro-ph.GA", "astro-ph.HE")
     assert paper.url == "https://arxiv.org/abs/2606.26218"
     assert "dwarf spheroidal galaxies" in paper.abstract
+
+
+def test_parse_daily_email_accepts_forwarded_html_body():
+    html_sample = SAMPLE.replace(" ", "&nbsp;").replace("\n", "<br  />")
+
+    papers = parse_daily_email(html_sample)
+
+    assert len(papers) == 1
+    assert papers[0].arxiv_id == "2606.26218"
+    assert "Ultra-Faint Dwarf" in papers[0].title

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import html
 from pathlib import Path
 import re
 
@@ -129,6 +130,9 @@ def is_subscription_subject(subject: str) -> bool:
 
 def _parse_semicolon_terms(body: str) -> list[str]:
     normalized = body.replace("\r\n", "\n").replace("\r", "\n")
+    normalized = re.sub(r"<br\s*/?>", "\n", normalized, flags=re.IGNORECASE)
+    normalized = re.sub(r"<[^>]+>", "", normalized)
+    normalized = html.unescape(normalized).replace("\xa0", " ")
     raw_terms = re.split(r"[;\n]+", normalized)
     terms: list[str] = []
     seen: set[str] = set()

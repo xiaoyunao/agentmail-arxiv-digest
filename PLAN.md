@@ -34,10 +34,12 @@ Build a mailbox-driven daily arXiv digest service using `dailyarxiv@agent.qq.com
 - `agently-cli +me` returns `dailyarxiv@agent.qq.com`.
 - `npx skills list -g --json` includes `agently-mail`.
 - Parser tests pass on wrapped arXiv daily entries.
+- Parser accepts forwarded rich-text arXiv daily messages with `<br>` and `&nbsp;` markup.
 - CLI can parse a saved daily email and produce a profile-filtered Markdown digest.
 - CLI can run an AI-triage-shaped local flow without requiring an API key.
 - CLI can export Codex review tasks and import Codex-produced summaries.
 - Subscription import accepts `Subscribe to dailyarxiv` emails and ignores other subjects.
+- Subscription import strips rich-text HTML from Gmail-style bodies.
 - Subscription import can send confirmation receipts with `--send-receipts`.
 - Final digest uses the stable daily research-note template.
 - Digest emails can be sent without Agent Mail confirmation through `send-smtp`.

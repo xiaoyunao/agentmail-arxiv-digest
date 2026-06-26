@@ -25,6 +25,15 @@ def test_parse_subscription_request_with_semicolon_terms():
     assert "dark matter; little red dot; yunao xiao" in profile.summary_requirements
 
 
+def test_parse_subscription_request_strips_rich_text_html():
+    body = '<span style="font-family:Arial; ">Milky Way; stellar streams; dwarf galaxies</span><br />'
+
+    profile = parse_subscription_request(body, "user@example.com")
+
+    assert profile.research_interests == ("Milky Way", "stellar streams", "dwarf galaxies")
+    assert "<span" not in profile.summary_requirements
+
+
 def test_subscription_subject_is_exact_case_insensitive():
     assert is_subscription_subject(SUBSCRIBE_SUBJECT)
     assert is_subscription_subject("subscribe to dailyarxiv")

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import html
 import re
 
 
@@ -37,6 +38,7 @@ class ArxivPaper:
 
 def parse_daily_email(text: str) -> list[ArxivPaper]:
     """Parse an arXiv daily email body into structured paper records."""
+    text = _normalize_email_text(text)
     starts = [match.start() for match in ENTRY_START_RE.finditer(text)]
     papers: list[ArxivPaper] = []
 
@@ -48,6 +50,13 @@ def parse_daily_email(text: str) -> list[ArxivPaper]:
             papers.append(paper)
 
     return papers
+
+
+def _normalize_email_text(text: str) -> str:
+    text = re.sub(r"<br\s*/?>", "\n", text, flags=re.IGNORECASE)
+    text = html.unescape(text)
+    text = text.replace("\xa0", " ")
+    return text
 
 
 def _parse_entry(block: str) -> ArxivPaper | None:

@@ -2,6 +2,28 @@
 
 ## 2026-06-26
 
+- Task: Test live subscription and forwarded arXiv daily emails end-to-end.
+- Files changed: `arxiv_digest/parser.py`, `arxiv_digest/subscriptions.py`, `docs/OPERATIONS.md`, `tests/test_parser.py`, `tests/test_subscriptions.py`, `PLAN.md`, `WORKLOG.md`; ignored runtime files under `data/`, `out/`, `subscribers/`, and send log.
+- Commands run:
+  - `agently-cli auth status`
+  - `agently-cli +me`
+  - `agently-cli message +list --dir inbox --limit 10`
+  - `python -m arxiv_digest.mail_cli import-subscriptions --send-receipts --limit 10`
+  - `python -m arxiv_digest.mail_cli latest-arxiv --query "astro-ph daily" --output data/test-astro-ph-2026-06-26.txt --limit 10`
+  - `python -m arxiv_digest.cli --mail-file data/test-astro-ph-2026-06-26.txt --profile subscribers/xiaoya_nao.cas.cn.json --triage codex --export-codex-tasks out/test-codex-tasks-2026-06-26.json --output out/test-recalled-2026-06-26.md`
+  - `python -m arxiv_digest.cli --mail-file data/test-astro-ph-2026-06-26.txt --profile subscribers/xiaoya_nao.cas.cn.json --triage codex --import-codex-summaries out/test-codex-summaries-2026-06-26.json --output out/test-digest-2026-06-26.md`
+  - `python -m arxiv_digest.mail_cli send-smtp --to xiaoya@nao.cas.cn --subject "dailyarxiv astro-ph digest test 2026-06-26" --body-file out/test-digest-2026-06-26.md --message-type daily_digest_test --dedupe-key "daily_digest_test:2026-06-26:xiaoya@nao.cas.cn"`
+- Key findings:
+  - The forwarded arXiv daily arrived as rich-text HTML with `<br>` and `&nbsp;`; parser needed normalization before entry detection.
+  - Gmail rich-text subscription bodies can include `<span>` markup; subscription parser now strips HTML before semicolon splitting.
+  - Live subscription import sent SMTP receipts and saved a clean subscriber profile.
+  - Test digest email was sent successfully to `xiaoya@nao.cas.cn` and recorded in send log.
+- Validation result: live end-to-end test completed using the forwarded arXiv daily; `pytest` passed 21 tests; `py_compile` passed.
+- Remaining issues:
+  - Need first non-forwarded arXiv daily received directly from arXiv to validate production timing.
+  - Need decide whether the selected paper count/detail level is too long for daily email after user review.
+- Next step: Inspect the received test digest and wait for the first direct arXiv daily email.
+
 - Task: Add outbound send log and duplicate-send guard.
 - Files changed: `.gitignore`, `arxiv_digest/send_log.py`, `arxiv_digest/mail_cli.py`, `arxiv_digest/subscriptions.py`, `docs/OPERATIONS.md`, `tests/test_send_log.py`, `tests/test_subscriptions.py`, `PLAN.md`, `WORKLOG.md`.
 - Commands run:
