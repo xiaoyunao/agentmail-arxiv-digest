@@ -13,6 +13,7 @@ from .subscriptions import (
     parse_subscription_request,
     render_subscription_receipt,
     save_profile,
+    should_send_subscription_receipt,
     subscription_receipt_subject,
 )
 
@@ -70,9 +71,10 @@ def main(argv: list[str] | None = None) -> int:
                 continue
             sender = full.get("from", {}).get("email", "")
             profile = parse_subscription_request(full.get("body", ""), sender)
+            send_receipt = args.send_receipts and should_send_subscription_receipt(profile, args.output_dir)
             path = save_profile(profile, args.output_dir)
             imported.append(path)
-            if args.send_receipts:
+            if send_receipt:
                 send_email(
                     profile.recipient,
                     subscription_receipt_subject(),

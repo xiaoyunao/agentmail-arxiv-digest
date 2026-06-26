@@ -4,6 +4,8 @@ from arxiv_digest.subscriptions import (
     is_subscription_subject,
     parse_subscription_request,
     render_subscription_receipt,
+    save_profile,
+    should_send_subscription_receipt,
     subscription_receipt_subject,
 )
 
@@ -37,3 +39,14 @@ def test_subscription_receipt_documents_format():
     assert "user@example.com" in body
     assert "Subscribe to dailyarxiv" in body
     assert "dark matter; little red dot; yunao xiao" in body
+
+
+def test_subscription_receipt_is_only_needed_for_new_or_changed_profile(tmp_path):
+    profile = parse_subscription_request("dark matter; stellar streams", "user@example.com")
+    same_profile = parse_subscription_request("dark matter; stellar streams", "user@example.com")
+    changed_profile = parse_subscription_request("dark matter; dwarf galaxies", "user@example.com")
+
+    assert should_send_subscription_receipt(profile, tmp_path)
+    save_profile(profile, tmp_path)
+    assert not should_send_subscription_receipt(same_profile, tmp_path)
+    assert should_send_subscription_receipt(changed_profile, tmp_path)

@@ -78,7 +78,7 @@ dark matter; little red dot; yunao xiao; stellar streams; dwarf galaxies
 def save_profile(profile: InterestProfile, directory: str | Path = DEFAULT_SUBSCRIBER_DIR) -> Path:
     target_dir = Path(directory)
     target_dir.mkdir(parents=True, exist_ok=True)
-    path = target_dir / f"{_safe_profile_name(profile.recipient)}.json"
+    path = profile_path(profile.recipient, target_dir)
     payload = {
         "name": profile.name,
         "recipient": profile.recipient,
@@ -98,6 +98,22 @@ def save_profile(profile: InterestProfile, directory: str | Path = DEFAULT_SUBSC
     }
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
     return path
+
+
+def profile_path(email: str, directory: str | Path = DEFAULT_SUBSCRIBER_DIR) -> Path:
+    return Path(directory) / f"{_safe_profile_name(email)}.json"
+
+
+def should_send_subscription_receipt(profile: InterestProfile, directory: str | Path = DEFAULT_SUBSCRIBER_DIR) -> bool:
+    path = profile_path(profile.recipient, directory)
+    if not path.exists():
+        return True
+    existing = InterestProfile.from_json_file(path)
+    return (
+        existing.research_interests != profile.research_interests
+        or existing.include_categories != profile.include_categories
+        or existing.summary_requirements != profile.summary_requirements
+    )
 
 
 def load_profiles(directory: str | Path = DEFAULT_SUBSCRIBER_DIR) -> list[InterestProfile]:

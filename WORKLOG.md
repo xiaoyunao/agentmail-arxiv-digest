@@ -2,6 +2,22 @@
 
 ## 2026-06-26
 
+- Task: Fix GitHub Actions, rewrite public README for subscribers, and add subscription receipt deduplication.
+- Files changed: `.github/workflows/tests.yml`, `README.md`, `arxiv_digest/mail_cli.py`, `arxiv_digest/subscriptions.py`, `tests/test_subscriptions.py`, `WORKLOG.md`.
+- Commands run:
+  - `gh run view 28229794676 --log-failed`
+  - `python -m pytest`
+  - `python -m py_compile arxiv_digest/*.py`
+- Key findings:
+  - GitHub Actions failed because the workflow did not install `pytest`.
+  - README was written like a local deployment guide; the project should present itself as an email subscription service.
+  - Repeated subscription scans would resend receipts without profile-change deduplication.
+- Validation result: `pytest` passed 16 tests; `py_compile` passed; created hourly `dailyarxiv-subscription-monitor` automation.
+- Remaining issues:
+  - Need production SMTP credentials in local `.env` before receipts/digests can actually send.
+  - Need verify next GitHub Actions run after push.
+- Next step: Commit and push fixes, then configure SMTP.
+
 - Task: Add unattended outbound SMTP path and formalize GitHub-ready project files.
 - Files changed: `.env.example`, `.github/workflows/tests.yml`, `CONTRIBUTING.md`, `LICENSE`, `README.md`, `docs/ARCHITECTURE.md`, `docs/OPERATIONS.md`, `arxiv_digest/mail_cli.py`, `arxiv_digest/smtp_sender.py`, `arxiv_digest/subscriptions.py`, `tests/test_smtp_sender.py`, `tests/test_subscriptions.py`, `PLAN.md`, `WORKLOG.md`.
 - Commands run:
