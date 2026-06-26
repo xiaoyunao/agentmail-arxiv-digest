@@ -29,7 +29,7 @@ def parse_subscription_request(body: str, sender_email: str) -> InterestProfile:
     summary_requirements = (
         "只根据这些兴趣线索筛选 astro-ph daily："
         + "; ".join(terms)
-        + "。先宽松召回，再由 Codex 判断语义相关性；入选文章用中文科研笔记格式总结。"
+        + "。先宽松召回，再由 Codex 判断语义相关性；入选文章阅读全文后用中文科研笔记格式总结。"
     )
     return InterestProfile(
         name=recipient,
@@ -71,8 +71,8 @@ dark matter; little red dot; stellar streams; dwarf galaxies
 
 说明：
 - 发件人邮箱就是接收日报的邮箱。
-- 关键词只是召回线索，最终会由 Codex 根据论文题目、作者、分类和摘要判断是否真正相关。
-- 如果当天 arXiv 没有发送 astro-ph daily，或者没有匹配文章，就不会强行生成无内容总结。
+- 关键词只是召回线索，最终由 Codex 判断语义相关性。
+- 无 arXiv daily 或无匹配文章时，当日不发空报告。
 """
 
 

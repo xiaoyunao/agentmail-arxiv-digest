@@ -9,7 +9,7 @@ Build a mailbox-driven daily arXiv digest service:
 3. Maintain subscriber profiles from fixed-format request emails.
 4. Broadly recall potentially relevant papers using categories, authors, keywords, and user interests.
 5. Use Codex to decide whether each recalled paper is `skip`, `short`, or `full_read`.
-6. Use Codex to generate personalized Chinese digests only for triage-approved papers.
+6. Use Codex to read the full text/PDF and generate personalized Chinese digests only for triage-approved papers.
 7. Send each subscriber only the papers matching their direction and requirements.
 8. Use SMTP for unattended outbound receipts and digests.
 
@@ -31,9 +31,10 @@ arXiv astro-ph daily mail
   -> normalized paper table
   -> broad deterministic recall with profile signals
   -> Codex task export
-  -> Codex semantic triage and detailed summary
+  -> Codex semantic triage
+  -> Codex full-text/PDF reading and detailed summary
   -> Codex summary import/cache
-  -> Markdown/HTML digest rendering
+  -> plain-text email digest rendering
   -> SMTP send
 ```
 
@@ -53,7 +54,7 @@ dark matter; little red dot; yunao xiao; stellar streams; dwarf galaxies
 
 The sender address becomes the digest recipient. The body is parsed only as data: semicolon- or newline-separated terms are saved as research interests and boost keywords. Terms may be directions, fixed objects, keywords, or author names. The first implementation stores accepted profiles as JSON files. Later versions can move to SQLite.
 
-Accepted subscriptions receive an automatic SMTP receipt summarizing the subscription address, terms, and update format.
+Accepted subscriptions receive an automatic SMTP receipt summarizing the subscription address, terms, and update format. If there is no arXiv daily email or no matching paper, the service does not send an empty daily report.
 
 ## Codex Relevance Triage Contract
 

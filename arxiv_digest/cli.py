@@ -23,7 +23,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Parse arXiv daily mail and render a profile digest.")
     parser.add_argument("--mail-file", required=True, help="Path to raw arXiv daily email text.")
     parser.add_argument("--profile", required=True, help="Path to profile JSON.")
-    parser.add_argument("--output", help="Optional Markdown output path.")
+    parser.add_argument("--output", help="Optional digest output path.")
     parser.add_argument("--export-codex-tasks", help="Write triaged summary tasks for Codex to this JSON file.")
     parser.add_argument("--import-codex-summaries", help="Read Codex-produced summaries from this JSON file and render final digest.")
     parser.add_argument("--use-summary-cache", action="store_true", help="Render cached Codex summaries when available.")

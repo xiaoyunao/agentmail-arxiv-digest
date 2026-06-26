@@ -2,6 +2,23 @@
 
 ## 2026-06-26
 
+- Task: Refine subscription receipt wording, plain-text digest emails, and full-text reading requirements.
+- Files changed: `arxiv_digest/subscriptions.py`, `arxiv_digest/render.py`, `arxiv_digest/summary.py`, `arxiv_digest/codex_backend.py`, `arxiv_digest/cli.py`, `tests/test_render.py`, `tests/test_subscriptions.py`, `README.md`, `docs/OPERATIONS.md`, `docs/ARCHITECTURE.md`, `PLAN.md`, `WORKLOG.md`; updated noon and 14:00 fallback automations.
+- Commands run:
+  - `python -m pytest`
+  - `python -m py_compile arxiv_digest/*.py`
+  - `rg -n "stable Markdown|abstracts alone|provided abstract/metadata|digest\\.md|out/digest.md|out/recalled.md|recalled\\.md" "$HOME/.codex/automations" README.md docs arxiv_digest PLAN.md`
+- Key findings:
+  - Subscription receipt wording was too conversational; it now says `无 arXiv daily 或无匹配文章时，当日不发空报告。`
+  - Final digest rendering used Markdown headings, links, `<details>`, and a follow-up questions section; the rendered email digest is now plain text and omits follow-up questions.
+  - Codex task prompts still allowed abstract-only summaries; prompt version is now `summary-v3` and instructions require full-text/PDF reading for included papers.
+  - Daily automation prompts now use `.txt` digests and explicitly prohibit included-paper summaries from abstracts alone.
+- Validation result: `pytest` passed 22 tests; `py_compile` passed.
+- Remaining issues:
+  - Need inspect the next received real digest email for readability in the mail client.
+  - Need first direct arXiv daily email to validate production timing.
+- Next step: Run the next real astro-ph daily through the updated full-text/plain-text flow.
+
 - Task: Test live subscription and forwarded arXiv daily emails end-to-end.
 - Files changed: `arxiv_digest/parser.py`, `arxiv_digest/subscriptions.py`, `docs/OPERATIONS.md`, `tests/test_parser.py`, `tests/test_subscriptions.py`, `PLAN.md`, `WORKLOG.md`; ignored runtime files under `data/`, `out/`, `subscribers/`, and send log.
 - Commands run:

@@ -48,6 +48,8 @@ def test_subscription_receipt_documents_format():
     assert "user@example.com" in body
     assert "Subscribe to dailyarxiv" in body
     assert "dark matter; little red dot; stellar streams" in body
+    assert "无 arXiv daily 或无匹配文章时，当日不发空报告。" in body
+    assert "强行生成" not in body
 
 
 def test_subscription_receipt_is_only_needed_for_new_or_changed_profile(tmp_path):

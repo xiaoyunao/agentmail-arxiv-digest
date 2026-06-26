@@ -66,7 +66,7 @@ def render_summarized_markdown_digest(profile: InterestProfile, summarized: list
         lines.extend(["今天没有匹配该兴趣配置的文章。", ""])
         return "\n".join(lines)
 
-    lines.extend(["## 今日入选文章", ""])
+    lines.extend(["今日入选文章", "==========", ""])
     for index, item in enumerate(summarized, start=1):
         triaged = item.triaged
         ranked = triaged.ranked
@@ -75,28 +75,30 @@ def render_summarized_markdown_digest(profile: InterestProfile, summarized: list
         summary = item.summary
         cache_note = "cache hit" if item.cache_hit else "new"
         paper_info = [
-            f"- **标题**：{paper.title}",
-            f"- **arXiv**：[{paper.arxiv_id}]({paper.url})",
-            f"- **作者**：{paper.authors}",
-            f"- **领域**：{', '.join(paper.categories)}",
-            f"- **类型**：{summary.paper_type}",
-            f"- **一句话主题**：{summary.topic_sentence}",
-            f"- **阅读优先级**：{summary.read_priority}",
-            f"- **AI 判读**：{decision.action}, relevance={decision.relevance_score:.2f}",
-            f"- **总结来源**：{cache_note}",
-            f"- **匹配原因**：{summary.why_matched}",
+            f"标题: {paper.title}",
+            f"arXiv: {paper.arxiv_id}",
+            f"链接: {paper.url}",
+            f"作者: {paper.authors}",
+            f"领域: {', '.join(paper.categories)}",
+            f"类型: {summary.paper_type}",
+            f"一句话主题: {summary.topic_sentence}",
+            f"阅读优先级: {summary.read_priority}",
+            f"AI 判读: {decision.action}, relevance={decision.relevance_score:.2f}",
+            f"总结来源: {cache_note}",
+            f"匹配原因: {summary.why_matched}",
         ]
         if summary.suggested_tags:
-            paper_info.append(f"- **标签**：{', '.join(summary.suggested_tags)}")
+            paper_info.append(f"标签: {', '.join(summary.suggested_tags)}")
         lines.extend(
             [
-                f"### {index}. {paper.title}",
+                f"{index}. {paper.title}",
+                "-" * min(72, max(12, len(f"{index}. {paper.title}"))),
                 "",
-                "#### 论文信息",
+                "论文信息",
                 "",
                 *paper_info,
                 "",
-                "#### 30 秒读懂",
+                "30 秒读懂",
                 "",
             ]
         )
@@ -104,15 +106,15 @@ def render_summarized_markdown_digest(profile: InterestProfile, summarized: list
         lines.extend(
             [
                 "",
-                "#### 背景与科学问题",
+                "背景与科学问题",
                 "",
                 summary.background,
                 "",
-                "#### 方法与技术路线",
+                "方法与技术路线",
                 "",
                 summary.method_data,
                 "",
-                "#### 关键结果",
+                "关键结果",
                 "",
             ]
         )
@@ -120,44 +122,39 @@ def render_summarized_markdown_digest(profile: InterestProfile, summarized: list
         lines.extend(
             [
                 "",
-                "#### 图表 / 全文阅读线索",
+                "图表 / 全文阅读线索",
                 "",
                 summary.figure_guide,
                 "",
-                "#### 物理图像 / 直觉解释",
+                "物理图像 / 直觉解释",
                 "",
                 summary.physical_picture,
                 "",
-                "#### 创新点与价值",
+                "创新点与价值",
                 "",
                 summary.novelty_value,
                 "",
-                "#### 局限、假设与潜在问题",
+                "局限、假设与潜在问题",
                 "",
                 summary.limitations,
                 "",
-                "#### 和你研究的潜在关系",
+                "和你研究的潜在关系",
                 "",
                 summary.relevance_to_profile,
                 "",
-                "#### 建议精读位置",
+                "建议精读位置",
                 "",
                 summary.recommended_reading,
                 "",
-                "#### 可继续追问",
-                "",
             ]
         )
-        _append_bullets(lines, summary.follow_up_questions)
         lines.extend(
             [
                 "",
-                "<details>",
-                "<summary>英文摘要</summary>",
+                "英文摘要",
                 "",
                 paper.abstract,
                 "",
-                "</details>",
                 "",
             ]
         )
@@ -166,14 +163,15 @@ def render_summarized_markdown_digest(profile: InterestProfile, summarized: list
 
 def _header(profile: InterestProfile, count: int) -> list[str]:
     lines = [
-        f"# {profile.name} arXiv 每日摘要",
+        f"{profile.name} arXiv 每日摘要",
+        "=" * min(72, max(12, len(f"{profile.name} arXiv 每日摘要"))),
         "",
         f"收件人: {profile.recipient}",
         f"筛选结果: {count} 篇",
         "",
     ]
     if profile.summary_requirements:
-        lines.extend(["## 用户要求", "", profile.summary_requirements.strip(), ""])
+        lines.extend(["用户要求", "", profile.summary_requirements.strip(), ""])
     return lines
 
 
@@ -195,7 +193,7 @@ def _append_paper_body(lines: list[str], abstract: str) -> None:
 
 def _append_bullets(lines: list[str], items: tuple[str, ...]) -> None:
     if not items:
-        lines.append("- 摘要层面未说明。")
+        lines.append("- 未说明。")
         return
     for item in items:
         lines.append(f"- {item}")

@@ -72,10 +72,10 @@ python -m arxiv_digest.cli \
   --profile profiles.galactic.example.json \
   --triage codex \
   --export-codex-tasks codex_tasks.json \
-  --output out/recalled.md
+  --output out/recalled.txt
 ```
 
-Import Codex summaries and render a digest:
+Import Codex summaries and render a plain-text digest:
 
 ```bash
 python -m arxiv_digest.cli \
@@ -83,7 +83,7 @@ python -m arxiv_digest.cli \
   --profile profiles.galactic.example.json \
   --triage codex \
   --import-codex-summaries codex_summaries.json \
-  --output out/digest.md
+  --output out/digest.txt
 ```
 
 Send a digest automatically through SMTP:
@@ -92,7 +92,7 @@ Send a digest automatically through SMTP:
 python -m arxiv_digest.mail_cli send-smtp \
   --to user@example.com \
   --subject "dailyarxiv astro-ph digest" \
-  --body-file out/digest.md
+  --body-file out/digest.txt
 ```
 
 `send-smtp` records successful sends in `.arxiv_digest_send_log.sqlite3` and skips duplicate sends. For daily production runs, pass an explicit key so reruns cannot send the same date twice:
@@ -101,7 +101,7 @@ python -m arxiv_digest.mail_cli send-smtp \
 python -m arxiv_digest.mail_cli send-smtp \
   --to user@example.com \
   --subject "dailyarxiv astro-ph digest 2026-06-26" \
-  --body-file out/digest.md \
+  --body-file out/digest.txt \
   --message-type daily_digest \
   --dedupe-key "daily_digest:2026-06-26:user@example.com"
 ```
@@ -109,6 +109,8 @@ python -m arxiv_digest.mail_cli send-smtp \
 Pass `--force` only when a duplicate send is intentional.
 
 Forwarded rich-text arXiv emails and rich-text subscription messages are normalized before parsing, so Gmail-style `<br>` and `&nbsp;` bodies are accepted.
+
+Codex summary tasks use the daily email abstract only for recall and semantic triage. Papers included in the final digest must be read from the arXiv full text/PDF before the Chinese summary is written.
 
 Clean old runtime files:
 

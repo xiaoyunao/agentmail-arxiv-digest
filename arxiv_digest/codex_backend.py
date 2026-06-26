@@ -23,8 +23,8 @@ def export_codex_summary_tasks(
         "prompt_version": SUMMARY_PROMPT_VERSION,
         "profile": profile.cache_payload(),
         "instructions": [
-            "For each task, write a Chinese summary based only on the provided paper metadata and abstract.",
-            "Do not invent facts not supported by the abstract.",
+            "For each task, use metadata and abstract only for orientation, then open the arXiv URL or PDF and read the full paper before writing.",
+            "Do not write a full digest from the abstract alone. If the full text is inaccessible, say so in limitations and keep the summary minimal.",
             "Return JSON matching the summaries schema in this file.",
         ],
         "summary_schema": {
@@ -44,7 +44,7 @@ def export_codex_summary_tasks(
             "relevance_to_profile": "string",
             "limitations": "string",
             "recommended_reading": "string",
-            "follow_up_questions": ["string"],
+            "follow_up_questions": [],
             "read_priority": "low|medium|high|must_read",
             "suggested_tags": ["string"],
         },
@@ -64,13 +64,15 @@ def export_codex_review_tasks(
         "profile": profile.cache_payload(),
         "instructions": [
             "For each recalled paper, first decide semantic relevance for this user.",
-            "The recall score and keyword reasons are only hints; do not treat them as final relevance.",
+            "At triage time, the recall score and keyword reasons are only hints; do not treat them as final relevance.",
             "Use action=skip for irrelevant papers, short for marginally useful papers, full_read for papers worth a detailed digest.",
             "Only include papers with action short or full_read in the summaries array.",
-            "Write Chinese summaries based only on the provided metadata and abstract.",
+            "For every included paper, open the arXiv URL or PDF and read the full paper before writing the Chinese summary.",
+            "Do not write an included summary from the abstract alone. If full text access fails, either omit the paper or state the access failure clearly in limitations and keep the summary minimal.",
             "Use a research-note tone: specific, concise, and not promotional or generic.",
             "Keep the same section contract every day so subscriber reports stay consistent.",
-            "If a field is not supported by the abstract, explicitly say that the abstract does not state it.",
+            "If a field is not supported by the full paper, explicitly say that the paper does not state it.",
+            "Set follow_up_questions to an empty array; it is retained only for backward-compatible JSON parsing and is not shown in email.",
             "Return JSON with a top-level summaries array matching the schema in this file.",
         ],
         "summary_item_schema": {
@@ -99,7 +101,7 @@ def export_codex_review_tasks(
                 "relevance_to_profile": "string",
                 "limitations": "string",
                 "recommended_reading": "string",
-                "follow_up_questions": ["string"],
+                "follow_up_questions": [],
                 "read_priority": "low|medium|high|must_read",
                 "suggested_tags": ["string"],
             },
@@ -243,6 +245,7 @@ def _task_payload(item: TriagedPaper) -> dict[str, Any]:
         "comments": paper.comments,
         "abstract": paper.abstract,
         "url": paper.url,
+        "pdf_url": paper.url.replace("/abs/", "/pdf/"),
         "triage": {
             "action": decision.action,
             "relevance_score": decision.relevance_score,
@@ -263,6 +266,7 @@ def _recalled_payload(item: RankedPaper) -> dict[str, Any]:
         "comments": paper.comments,
         "abstract": paper.abstract,
         "url": paper.url,
+        "pdf_url": paper.url.replace("/abs/", "/pdf/"),
         "recall": {
             "score": item.score,
             "reasons": list(item.reasons),

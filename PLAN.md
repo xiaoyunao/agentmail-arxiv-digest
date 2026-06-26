@@ -12,8 +12,8 @@ Build a mailbox-driven daily arXiv digest service using `dailyarxiv@agent.qq.com
 - Parse fixed-format arXiv daily emails into structured paper records.
 - Broadly recall papers against subscriber interest profiles.
 - Use Codex triage to decide whether recalled papers should be skipped, briefly summarized, or fully read.
-- Generate Chinese personalized summaries through Codex task export/import.
-- Render each selected paper with a stable research-note digest template.
+- Generate Chinese personalized summaries through Codex task export/import after full-text/PDF reading.
+- Render each selected paper with a stable plain-text research-note digest template.
 - Import fixed-format subscription requests with subject `Subscribe to dailyarxiv` and semicolon-separated body terms.
 - Send subscription receipts automatically through SMTP.
 - Send daily digests automatically through SMTP.
@@ -35,13 +35,13 @@ Build a mailbox-driven daily arXiv digest service using `dailyarxiv@agent.qq.com
 - `npx skills list -g --json` includes `agently-mail`.
 - Parser tests pass on wrapped arXiv daily entries.
 - Parser accepts forwarded rich-text arXiv daily messages with `<br>` and `&nbsp;` markup.
-- CLI can parse a saved daily email and produce a profile-filtered Markdown digest.
+- CLI can parse a saved daily email and produce a profile-filtered plain-text digest.
 - CLI can run an AI-triage-shaped local flow without requiring an API key.
 - CLI can export Codex review tasks and import Codex-produced summaries.
 - Subscription import accepts `Subscribe to dailyarxiv` emails and ignores other subjects.
 - Subscription import strips rich-text HTML from Gmail-style bodies.
 - Subscription import can send confirmation receipts with `--send-receipts`.
-- Final digest uses the stable daily research-note template.
+- Final digest uses the stable plain-text daily research-note template and does not include a follow-up-questions section.
 - Digest emails can be sent without Agent Mail confirmation through `send-smtp`.
 - Cleanup command removes old runtime files and only drops cache with an explicit flag.
 - Gmail SMTP smoke test succeeds for automatic outgoing mail.
