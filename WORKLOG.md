@@ -2,6 +2,21 @@
 
 ## 2026-06-26
 
+- Task: Add outbound send log and duplicate-send guard.
+- Files changed: `.gitignore`, `arxiv_digest/send_log.py`, `arxiv_digest/mail_cli.py`, `arxiv_digest/subscriptions.py`, `docs/OPERATIONS.md`, `tests/test_send_log.py`, `tests/test_subscriptions.py`, `PLAN.md`, `WORKLOG.md`.
+- Commands run:
+  - `python -m pytest`
+  - `python -m py_compile arxiv_digest/*.py`
+- Key findings:
+  - `send-smtp` needs a persistent sent-message key so repeated automation runs cannot resend the same digest.
+  - Subscription receipts should be deduped by the rendered profile state, not only by whether the profile JSON already exists.
+  - Public examples should avoid real names in README, operations docs, and receipt text.
+- Validation result: `pytest` passed 19 tests; `py_compile` passed.
+- Remaining issues:
+  - Need first real arXiv daily email to validate end-to-end daily digest.
+  - Parsed paper/run-state persistence can be added after the first real operations run if needed.
+- Next step: Run the first real astro-ph daily email through the full workflow.
+
 - Task: Configure Gmail SMTP for automatic dailyarxiv outgoing mail.
 - Files changed: local `.env` only, plus `WORKLOG.md` and `PLAN.md` notes.
 - Commands run:

@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 from pathlib import Path
 
 from .cleanup import cleanup_runtime_files
 from .env import load_env_file
 from .mail import prepare_send, read_message, search_messages
+from .profiles import InterestProfile
+from .send_log import DEFAULT_SEND_LOG_PATH, SendLog, make_dedupe_key
 from .smtp_sender import send_email
 from .subscriptions import (
     SUBSCRIBE_SUBJECT,
@@ -13,7 +16,6 @@ from .subscriptions import (
     parse_subscription_request,
     render_subscription_receipt,
     save_profile,
-    should_send_subscription_receipt,
     subscription_receipt_subject,
 )
 
@@ -32,6 +34,7 @@ def build_parser() -> argparse.ArgumentParser:
     subs.add_argument("--limit", type=int, default=20)
     subs.add_argument("--output-dir", default="subscribers")
     subs.add_argument("--send-receipts", action="store_true", help="Send automatic subscription receipts via SMTP.")
+    subs.add_argument("--send-log", default=DEFAULT_SEND_LOG_PATH, help="SQLite send log path for receipt dedupe.")
 
     send = sub.add_parser("prepare-send", help="Prepare a digest email and print confirmation details.")
     send.add_argument("--to", required=True)
@@ -42,6 +45,10 @@ def build_parser() -> argparse.ArgumentParser:
     smtp.add_argument("--to", required=True)
     smtp.add_argument("--subject", required=True)
     smtp.add_argument("--body-file", required=True)
+    smtp.add_argument("--message-type", default="smtp", help="Message type stored in the send log.")
+    smtp.add_argument("--dedupe-key", help="Optional explicit dedupe key. Defaults to recipient+subject+body hash.")
+    smtp.add_argument("--send-log", default=DEFAULT_SEND_LOG_PATH, help="SQLite send log path.")
+    smtp.add_argument("--force", action="store_true", help="Send even if the dedupe key already exists.")
 
     cleanup = sub.add_parser("cleanup", help="Remove old runtime files after daily digest sends.")
     cleanup.add_argument("--keep-days", type=int, default=7, help="Keep files newer than this many days.")
@@ -63,6 +70,7 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "import-subscriptions":
         result = search_messages(args.query, limit=args.limit)
+        send_log = SendLog(args.send_log) if args.send_receipts else None
         imported = []
         for message in result["data"].get("data", []):
             full = read_message(message["message_id"])["data"]
@@ -71,14 +79,26 @@ def main(argv: list[str] | None = None) -> int:
                 continue
             sender = full.get("from", {}).get("email", "")
             profile = parse_subscription_request(full.get("body", ""), sender)
-            send_receipt = args.send_receipts and should_send_subscription_receipt(profile, args.output_dir)
+            receipt_key = _subscription_receipt_key(profile)
+            send_receipt = send_log is not None and not send_log.already_sent(receipt_key)
             path = save_profile(profile, args.output_dir)
             imported.append(path)
             if send_receipt:
+                receipt_subject = subscription_receipt_subject()
                 send_email(
                     profile.recipient,
-                    subscription_receipt_subject(),
+                    receipt_subject,
                     render_subscription_receipt(profile),
+                )
+                send_log.record_sent(
+                    dedupe_key=receipt_key,
+                    recipient=profile.recipient,
+                    subject=receipt_subject,
+                    message_type="subscription_receipt",
+                    metadata={
+                        "message_id": message.get("message_id"),
+                        "interests": list(profile.research_interests),
+                    },
                 )
         for path in imported:
             print(path)
@@ -92,7 +112,20 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "send-smtp":
         body = Path(args.body_file).read_text(encoding="utf-8")
+        body_hash = hashlib.sha256(body.encode("utf-8")).hexdigest()
+        dedupe_key = args.dedupe_key or make_dedupe_key(args.message_type, args.to, args.subject, body_hash)
+        send_log = SendLog(args.send_log)
+        if not args.force and send_log.already_sent(dedupe_key):
+            print(f"skipped duplicate {args.subject!r} to {args.to} via SMTP ({dedupe_key})")
+            return 0
         send_email(args.to, args.subject, body)
+        send_log.record_sent(
+            dedupe_key=dedupe_key,
+            recipient=args.to,
+            subject=args.subject,
+            message_type=args.message_type,
+            metadata={"body_file": args.body_file, "body_sha256": body_hash},
+        )
         print(f"sent {args.subject!r} to {args.to} via SMTP")
         return 0
 
@@ -112,6 +145,16 @@ def _latest_message(query: str, limit: int) -> dict:
     if not messages:
         raise SystemExit(f"no messages found for query: {query}")
     return messages[0]
+
+
+def _subscription_receipt_key(profile: InterestProfile) -> str:
+    return make_dedupe_key(
+        "subscription_receipt",
+        profile.recipient,
+        list(profile.research_interests),
+        list(profile.include_categories),
+        profile.summary_requirements,
+    )
 
 
 if __name__ == "__main__":

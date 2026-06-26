@@ -37,7 +37,7 @@ Users subscribe by sending an email from the address that should receive the dig
 ```text
 Subject: Subscribe to dailyarxiv
 
-dark matter; little red dot; yunao xiao; stellar streams; dwarf galaxies
+dark matter; little red dot; stellar streams; dwarf galaxies
 ```
 
 Import new subscriptions and send automatic receipts:
@@ -94,6 +94,8 @@ python -m arxiv_digest.mail_cli send-smtp \
   --subject "dailyarxiv astro-ph digest" \
   --body-file out/digest.md
 ```
+
+`send-smtp` records successful sends in `.arxiv_digest_send_log.sqlite3` and skips duplicate sends with the same recipient, subject, and body. Pass `--force` only when a duplicate send is intentional.
 
 Clean old runtime files:
 

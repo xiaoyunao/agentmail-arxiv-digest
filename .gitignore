@@ -12,6 +12,8 @@ codex_tasks*.json
 codex_summaries*.json
 .arxiv_digest_cache.sqlite3
 .arxiv_digest_cache.sqlite3-*
+.arxiv_digest_send_log.sqlite3
+.arxiv_digest_send_log.sqlite3-*
 .env
 .env.*
 !.env.example

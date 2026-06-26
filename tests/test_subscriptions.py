@@ -38,7 +38,7 @@ def test_subscription_receipt_documents_format():
     assert subscription_receipt_subject() == "dailyarxiv 订阅成功"
     assert "user@example.com" in body
     assert "Subscribe to dailyarxiv" in body
-    assert "dark matter; little red dot; yunao xiao" in body
+    assert "dark matter; little red dot; stellar streams" in body
 
 
 def test_subscription_receipt_is_only_needed_for_new_or_changed_profile(tmp_path):

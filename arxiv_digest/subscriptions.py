@@ -66,7 +66,7 @@ def render_subscription_receipt(profile: InterestProfile) -> str:
 Subscribe to dailyarxiv
 
 正文用英文分号分隔方向、关键词、固定对象或作者名，例如：
-dark matter; little red dot; yunao xiao; stellar streams; dwarf galaxies
+dark matter; little red dot; stellar streams; dwarf galaxies
 
 说明：
 - 发件人邮箱就是接收日报的邮箱。
