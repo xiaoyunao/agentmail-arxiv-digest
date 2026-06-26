@@ -2,6 +2,21 @@
 
 ## 2026-06-26
 
+- Task: Configure Gmail SMTP for automatic dailyarxiv outgoing mail.
+- Files changed: local `.env` only, plus `WORKLOG.md` and `PLAN.md` notes.
+- Commands run:
+  - `chmod 600 .env`
+  - `git status --short --ignored .env`
+  - SMTP smoke test via `arxiv_digest.smtp_sender.send_email`
+- Key findings:
+  - `.env` is ignored by git and has owner-only permissions.
+  - Gmail SMTP accepted the app password for `dailyarxiv.digest@gmail.com`.
+- Validation result: SMTP smoke test sent successfully to `dailyarxiv.digest@gmail.com`.
+- Remaining issues:
+  - Need first real arXiv daily email to validate end-to-end daily digest.
+  - Need outbound send log and duplicate-send guard before broad public use.
+- Next step: Use the next real astro-ph daily email to run a full daily digest pass.
+
 - Task: Adjust subscription monitor schedule, public README wording, and GitHub visibility.
 - Files changed: `README.md`, `WORKLOG.md`.
 - Commands run:

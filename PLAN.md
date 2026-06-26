@@ -27,7 +27,6 @@ Build a mailbox-driven daily arXiv digest service using `dailyarxiv@agent.qq.com
 - Add persistent storage for parsed papers, generated summaries, and send logs.
 - Add duplicate-send protection before enabling scheduled sends.
 - Decide whether daily cleanup should drop summary cache or keep it for deduplication.
-- Configure production SMTP credentials in local `.env`.
 
 ## Validation Criteria
 
@@ -44,11 +43,12 @@ Build a mailbox-driven daily arXiv digest service using `dailyarxiv@agent.qq.com
 - Final digest uses the stable daily research-note template.
 - Digest emails can be sent without Agent Mail confirmation through `send-smtp`.
 - Cleanup command removes old runtime files and only drops cache with an explicit flag.
+- Gmail SMTP smoke test succeeds for automatic outgoing mail.
 
 ## Next Recommended Steps
 
 - Subscribe `dailyarxiv@agent.qq.com` to arXiv `astro-ph` daily emails.
 - Use the current parser/CLI on the first received daily email.
 - Use Codex task export/import on one real daily email and inspect false positives/false negatives before enabling sends.
-- Configure SMTP credentials, then run one automatic receipt/digest send smoke test.
+- Run one full end-to-end daily digest on a real astro-ph daily email.
 - Add outbound send log and duplicate-send guard.
