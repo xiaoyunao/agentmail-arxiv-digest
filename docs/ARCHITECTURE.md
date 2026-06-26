@@ -34,7 +34,7 @@ arXiv astro-ph daily mail
   -> Codex semantic triage
   -> Codex full-text/PDF reading and detailed summary
   -> Codex summary import/cache
-  -> plain-text email digest rendering
+  -> HTML email digest rendering with plain-text fallback
   -> SMTP send
 ```
 

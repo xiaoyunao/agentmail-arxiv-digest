@@ -4,6 +4,7 @@ from arxiv_digest.subscriptions import (
     is_subscription_subject,
     parse_subscription_request,
     render_subscription_receipt,
+    render_subscription_receipt_html,
     save_profile,
     should_send_subscription_receipt,
     subscription_receipt_subject,
@@ -50,6 +51,16 @@ def test_subscription_receipt_documents_format():
     assert "dark matter; little red dot; stellar streams" in body
     assert "无 arXiv daily 或无匹配文章时，当日不发空报告。" in body
     assert "强行生成" not in body
+
+
+def test_subscription_receipt_has_html_formatting():
+    profile = parse_subscription_request("dark matter; stellar streams", "user@example.com")
+    body = render_subscription_receipt_html(profile)
+
+    assert "<h2" in body
+    assert "<strong>订阅邮箱：" in body
+    assert "<ul>" in body
+    assert "dark matter; stellar streams" in body
 
 
 def test_subscription_receipt_is_only_needed_for_new_or_changed_profile(tmp_path):

@@ -41,7 +41,7 @@ After a subscription is accepted, the service sends a confirmation receipt.
 
 ## What You Receive
 
-On arXiv astro-ph mailing days, `dailyarxiv` reads the daily arXiv email and selects papers matching each subscriber's interests. The summary is written in Chinese by default, sent as plain email text, and follows a stable research-note structure:
+On arXiv astro-ph mailing days, `dailyarxiv` reads the daily arXiv email and selects papers matching each subscriber's interests. The summary is written in Chinese by default, sent as a formatted HTML email with a plain-text fallback, and follows a stable research-note structure:
 
 - paper information and read priority
 - 30-second takeaways

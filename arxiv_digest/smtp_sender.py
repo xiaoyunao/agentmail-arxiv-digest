@@ -44,18 +44,34 @@ def smtp_config_from_env(prefix: str = "DAILYARXIV_SMTP_") -> SmtpConfig:
     )
 
 
-def build_email_message(config: SmtpConfig, to: str, subject: str, body: str) -> EmailMessage:
+def build_email_message(
+    config: SmtpConfig,
+    to: str,
+    subject: str,
+    body: str,
+    *,
+    html_body: str | None = None,
+) -> EmailMessage:
     message = EmailMessage()
     message["From"] = f"{config.from_name} <{config.from_email}>"
     message["To"] = to
     message["Subject"] = subject
     message.set_content(body)
+    if html_body:
+        message.add_alternative(html_body, subtype="html")
     return message
 
 
-def send_email(to: str, subject: str, body: str, *, config: SmtpConfig | None = None) -> None:
+def send_email(
+    to: str,
+    subject: str,
+    body: str,
+    *,
+    html_body: str | None = None,
+    config: SmtpConfig | None = None,
+) -> None:
     config = config or smtp_config_from_env()
-    message = build_email_message(config, to, subject, body)
+    message = build_email_message(config, to, subject, body, html_body=html_body)
     if config.security == "ssl":
         with smtplib.SMTP_SSL(config.host, config.port, timeout=config.timeout) as smtp:
             _login_and_send(smtp, config, message)

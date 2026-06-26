@@ -8,7 +8,12 @@ from .llm import DEFAULT_TRIAGE_MODEL
 from .parser import parse_daily_email
 from .profiles import InterestProfile
 from .ranker import rank_papers, recall_papers
-from .render import render_markdown_digest, render_summarized_markdown_digest, render_triaged_markdown_digest
+from .render import (
+    render_markdown_digest,
+    render_summarized_html_digest,
+    render_summarized_markdown_digest,
+    render_triaged_markdown_digest,
+)
 from .codex_backend import (
     export_codex_summary_tasks,
     export_codex_review_tasks,
@@ -24,6 +29,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--mail-file", required=True, help="Path to raw arXiv daily email text.")
     parser.add_argument("--profile", required=True, help="Path to profile JSON.")
     parser.add_argument("--output", help="Optional digest output path.")
+    parser.add_argument("--format", choices=("text", "html"), default="text", help="Output format for final summarized digests.")
     parser.add_argument("--export-codex-tasks", help="Write triaged summary tasks for Codex to this JSON file.")
     parser.add_argument("--import-codex-summaries", help="Read Codex-produced summaries from this JSON file and render final digest.")
     parser.add_argument("--use-summary-cache", action="store_true", help="Render cached Codex summaries when available.")
@@ -59,7 +65,7 @@ def main(argv: list[str] | None = None) -> int:
             export_codex_review_tasks(profile, recalled, args.export_codex_tasks)
         if args.import_codex_summaries:
             summarized = import_codex_review_summaries(profile, recalled, args.import_codex_summaries)
-            digest = render_summarized_markdown_digest(profile, summarized)
+            digest = _render_summarized(profile, summarized, args.format)
         elif args.export_codex_tasks:
             digest = render_markdown_digest(profile, recalled)
         else:
@@ -78,10 +84,10 @@ def main(argv: list[str] | None = None) -> int:
 
         if args.import_codex_summaries:
             summarized = import_codex_summaries(profile, triaged, args.import_codex_summaries)
-            digest = render_summarized_markdown_digest(profile, summarized)
+            digest = _render_summarized(profile, summarized, args.format)
         elif args.use_summary_cache:
             summarized = load_cached_codex_summaries(profile, triaged)
-            digest = render_summarized_markdown_digest(profile, summarized)
+            digest = _render_summarized(profile, summarized, args.format)
         else:
             digest = render_triaged_markdown_digest(profile, triaged)
 
@@ -90,6 +96,12 @@ def main(argv: list[str] | None = None) -> int:
     else:
         print(digest)
     return 0
+
+
+def _render_summarized(profile: InterestProfile, summarized: list, output_format: str) -> str:
+    if output_format == "html":
+        return render_summarized_html_digest(profile, summarized)
+    return render_summarized_markdown_digest(profile, summarized)
 
 
 if __name__ == "__main__":

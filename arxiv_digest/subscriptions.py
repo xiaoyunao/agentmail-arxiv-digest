@@ -76,6 +76,37 @@ dark matter; little red dot; stellar streams; dwarf galaxies
 """
 
 
+def render_subscription_receipt_html(profile: InterestProfile) -> str:
+    interests = "; ".join(profile.research_interests)
+    escaped_interests = html.escape(interests)
+    escaped_recipient = html.escape(profile.recipient)
+    return f"""<!doctype html>
+<html>
+  <body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif; color:#111; line-height:1.55;">
+    <h2 style="margin:0 0 16px;">dailyarxiv 订阅成功</h2>
+    <p>你的 dailyarxiv 订阅已经生效。</p>
+    <p>
+      <strong>订阅邮箱：</strong>{escaped_recipient}<br>
+      <strong>订阅方向：</strong>{escaped_interests}
+    </p>
+    <p>之后工作日如收到 arXiv astro-ph daily，系统会按你的方向筛选文章，并发送中文科研笔记式总结。</p>
+    <h3>修改订阅</h3>
+    <p>请继续用这个邮箱发送邮件到 <strong>dailyarxiv@agent.qq.com</strong>。</p>
+    <p>
+      <strong>标题：</strong>Subscribe to dailyarxiv<br>
+      <strong>正文：</strong>用英文分号分隔方向、关键词、固定对象或作者名
+    </p>
+    <pre style="background:#f6f8fa; padding:12px; border-radius:6px; white-space:pre-wrap;">dark matter; little red dot; stellar streams; dwarf galaxies</pre>
+    <ul>
+      <li>发件人邮箱就是接收日报的邮箱。</li>
+      <li>关键词只是召回线索，最终由 Codex 判断语义相关性。</li>
+      <li>无 arXiv daily 或无匹配文章时，当日不发空报告。</li>
+    </ul>
+  </body>
+</html>
+"""
+
+
 def save_profile(profile: InterestProfile, directory: str | Path = DEFAULT_SUBSCRIBER_DIR) -> Path:
     target_dir = Path(directory)
     target_dir.mkdir(parents=True, exist_ok=True)

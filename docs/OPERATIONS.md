@@ -75,7 +75,7 @@ python -m arxiv_digest.cli \
   --output out/recalled.txt
 ```
 
-Import Codex summaries and render a plain-text digest:
+Import Codex summaries and render both fallback text and formatted HTML digests:
 
 ```bash
 python -m arxiv_digest.cli \
@@ -84,6 +84,14 @@ python -m arxiv_digest.cli \
   --triage codex \
   --import-codex-summaries codex_summaries.json \
   --output out/digest.txt
+
+python -m arxiv_digest.cli \
+  --mail-file data/latest-astro-ph.txt \
+  --profile profiles.galactic.example.json \
+  --triage codex \
+  --import-codex-summaries codex_summaries.json \
+  --format html \
+  --output out/digest.html
 ```
 
 Send a digest automatically through SMTP:
@@ -92,7 +100,8 @@ Send a digest automatically through SMTP:
 python -m arxiv_digest.mail_cli send-smtp \
   --to user@example.com \
   --subject "dailyarxiv astro-ph digest" \
-  --body-file out/digest.txt
+  --body-file out/digest.txt \
+  --html-body-file out/digest.html
 ```
 
 `send-smtp` records successful sends in `.arxiv_digest_send_log.sqlite3` and skips duplicate sends. For daily production runs, pass an explicit key so reruns cannot send the same date twice:
@@ -102,6 +111,7 @@ python -m arxiv_digest.mail_cli send-smtp \
   --to user@example.com \
   --subject "dailyarxiv astro-ph digest 2026-06-26" \
   --body-file out/digest.txt \
+  --html-body-file out/digest.html \
   --message-type daily_digest \
   --dedupe-key "daily_digest:2026-06-26:user@example.com"
 ```

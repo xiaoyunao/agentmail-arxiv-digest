@@ -15,6 +15,7 @@ from .subscriptions import (
     is_subscription_subject,
     parse_subscription_request,
     render_subscription_receipt,
+    render_subscription_receipt_html,
     save_profile,
     subscription_receipt_subject,
 )
@@ -45,6 +46,7 @@ def build_parser() -> argparse.ArgumentParser:
     smtp.add_argument("--to", required=True)
     smtp.add_argument("--subject", required=True)
     smtp.add_argument("--body-file", required=True)
+    smtp.add_argument("--html-body-file", help="Optional HTML body path for rich email rendering.")
     smtp.add_argument("--message-type", default="smtp", help="Message type stored in the send log.")
     smtp.add_argument("--dedupe-key", help="Optional explicit dedupe key. Defaults to recipient+subject+body hash.")
     smtp.add_argument("--send-log", default=DEFAULT_SEND_LOG_PATH, help="SQLite send log path.")
@@ -89,6 +91,7 @@ def main(argv: list[str] | None = None) -> int:
                     profile.recipient,
                     receipt_subject,
                     render_subscription_receipt(profile),
+                    html_body=render_subscription_receipt_html(profile),
                 )
                 send_log.record_sent(
                     dedupe_key=receipt_key,
@@ -112,13 +115,16 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "send-smtp":
         body = Path(args.body_file).read_text(encoding="utf-8")
+        html_body = Path(args.html_body_file).read_text(encoding="utf-8") if args.html_body_file else None
         body_hash = hashlib.sha256(body.encode("utf-8")).hexdigest()
+        if html_body:
+            body_hash = hashlib.sha256((body + "\n--HTML--\n" + html_body).encode("utf-8")).hexdigest()
         dedupe_key = args.dedupe_key or make_dedupe_key(args.message_type, args.to, args.subject, body_hash)
         send_log = SendLog(args.send_log)
         if not args.force and send_log.already_sent(dedupe_key):
             print(f"skipped duplicate {args.subject!r} to {args.to} via SMTP ({dedupe_key})")
             return 0
-        send_email(args.to, args.subject, body)
+        send_email(args.to, args.subject, body, html_body=html_body)
         send_log.record_sent(
             dedupe_key=dedupe_key,
             recipient=args.to,

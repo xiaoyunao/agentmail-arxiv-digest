@@ -2,6 +2,26 @@
 
 ## 2026-06-26
 
+- Task: Switch receipt and digest delivery to formatted HTML email with text fallback.
+- Files changed: `arxiv_digest/smtp_sender.py`, `arxiv_digest/mail_cli.py`, `arxiv_digest/subscriptions.py`, `arxiv_digest/render.py`, `arxiv_digest/cli.py`, `tests/test_smtp_sender.py`, `tests/test_subscriptions.py`, `tests/test_render.py`, `README.md`, `docs/OPERATIONS.md`, `docs/ARCHITECTURE.md`, `PLAN.md`, `WORKLOG.md`; updated noon and 14:00 fallback automations.
+- Commands run:
+  - `python -m pytest`
+  - `python -m py_compile arxiv_digest/*.py`
+  - `python -m arxiv_digest.cli --mail-file data/test-astro-ph-2026-06-26.txt --profile subscribers/xiaoya_nao.cas.cn.json --triage codex --import-codex-summaries out/test-codex-summaries-2026-06-26.json --output out/test-digest-html-2026-06-26.txt`
+  - `python -m arxiv_digest.cli --mail-file data/test-astro-ph-2026-06-26.txt --profile subscribers/xiaoya_nao.cas.cn.json --triage codex --import-codex-summaries out/test-codex-summaries-2026-06-26.json --format html --output out/test-digest-html-2026-06-26.html`
+  - `python -m arxiv_digest.mail_cli send-smtp --to xiaoya@nao.cas.cn --subject "dailyarxiv subscription receipt HTML test 2026-06-26" --body-file out/test-receipt-html-2026-06-26.txt --html-body-file out/test-receipt-html-2026-06-26.html --message-type subscription_receipt_test --dedupe-key "subscription_receipt_html_test:2026-06-26:xiaoya@nao.cas.cn" --force`
+  - `python -m arxiv_digest.mail_cli send-smtp --to xiaoya@nao.cas.cn --subject "dailyarxiv astro-ph digest HTML test 2026-06-26" --body-file out/test-digest-html-2026-06-26.txt --html-body-file out/test-digest-html-2026-06-26.html --message-type daily_digest_test --dedupe-key "daily_digest_html_test:2026-06-26:xiaoya@nao.cas.cn" --force`
+- Key findings:
+  - Plain-text email loses the formatting the subscriber needs; SMTP now sends multipart messages with plain text plus HTML.
+  - Subscription receipts now have an HTML renderer with headings, bold labels, and lists.
+  - Final digests can be rendered with `--format html` and sent via `--html-body-file`.
+  - HTML digest output has headings, bold metadata labels, lists, and arXiv links without exposing Markdown syntax.
+- Validation result: HTML receipt and HTML digest test emails were sent to `xiaoya@nao.cas.cn`; send log contains both test dedupe keys; `pytest` passed 25 tests; `py_compile` passed.
+- Remaining issues:
+  - Need inspect the received HTML email visually in the mail client.
+  - Need first direct arXiv daily email to validate production timing.
+- Next step: Use the next real astro-ph daily run with `.txt` fallback plus `.html` formatted digest delivery.
+
 - Task: Refine subscription receipt wording, plain-text digest emails, and full-text reading requirements.
 - Files changed: `arxiv_digest/subscriptions.py`, `arxiv_digest/render.py`, `arxiv_digest/summary.py`, `arxiv_digest/codex_backend.py`, `arxiv_digest/cli.py`, `tests/test_render.py`, `tests/test_subscriptions.py`, `README.md`, `docs/OPERATIONS.md`, `docs/ARCHITECTURE.md`, `PLAN.md`, `WORKLOG.md`; updated noon and 14:00 fallback automations.
 - Commands run:
