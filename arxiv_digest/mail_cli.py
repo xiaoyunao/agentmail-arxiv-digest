@@ -3,8 +3,9 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
+from .cleanup import cleanup_runtime_files
 from .mail import prepare_send, read_message, search_messages
-from .subscriptions import parse_subscription_request, save_profile
+from .subscriptions import SUBSCRIBE_SUBJECT, is_subscription_subject, parse_subscription_request, save_profile
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -17,7 +18,7 @@ def build_parser() -> argparse.ArgumentParser:
     latest.add_argument("--limit", type=int, default=10)
 
     subs = sub.add_parser("import-subscriptions", help="Import fixed-format subscription request emails.")
-    subs.add_argument("--query", default="subscribe arxiv-digest")
+    subs.add_argument("--query", default=SUBSCRIBE_SUBJECT)
     subs.add_argument("--limit", type=int, default=20)
     subs.add_argument("--output-dir", default="subscribers")
 
@@ -25,6 +26,11 @@ def build_parser() -> argparse.ArgumentParser:
     send.add_argument("--to", required=True)
     send.add_argument("--subject", required=True)
     send.add_argument("--body-file", required=True)
+
+    cleanup = sub.add_parser("cleanup", help="Remove old runtime files after daily digest sends.")
+    cleanup.add_argument("--keep-days", type=int, default=7, help="Keep files newer than this many days.")
+    cleanup.add_argument("--path", action="append", default=["data", "out"], help="Runtime directory to clean. Repeatable.")
+    cleanup.add_argument("--drop-cache", action="store_true", help="Also delete local summary cache sqlite files.")
 
     return parser
 
@@ -43,6 +49,9 @@ def main(argv: list[str] | None = None) -> int:
         imported = []
         for message in result["data"].get("data", []):
             full = read_message(message["message_id"])["data"]
+            subject = full.get("subject") or message.get("subject") or ""
+            if not is_subscription_subject(subject):
+                continue
             sender = full.get("from", {}).get("email", "")
             profile = parse_subscription_request(full.get("body", ""), sender)
             imported.append(save_profile(profile, args.output_dir))
@@ -54,6 +63,13 @@ def main(argv: list[str] | None = None) -> int:
         body = Path(args.body_file).read_text(encoding="utf-8")
         result = prepare_send(args.to, args.subject, body)
         print(result)
+        return 0
+
+    if args.command == "cleanup":
+        removed = cleanup_runtime_files(args.path, keep_days=args.keep_days, drop_cache=args.drop_cache)
+        for path in removed:
+            print(path)
+        print(f"removed {len(removed)} files")
         return 0
 
     raise SystemExit(f"unknown command: {args.command}")

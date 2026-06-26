@@ -63,9 +63,51 @@ python -m arxiv_digest.mail_cli prepare-send \
   --to user@example.com \
   --subject "Daily arXiv digest" \
   --body-file out/digest.md
+
+# 6. After all summaries are sent, remove old runtime files.
+python -m arxiv_digest.mail_cli cleanup --keep-days 7
 ```
 
 The optional OpenAI API path remains in code for future use, but the planned workflow above does not require API billing.
+
+## Subscriber Email Format
+
+Users subscribe from the mailbox that should receive the digest.
+
+- Subject: `Subscribe to dailyarxiv`
+- Body: semicolon-separated interests, objects, keywords, or author names.
+
+Example:
+
+```text
+dark matter; little red dot; yunao xiao; stellar streams; dwarf galaxies
+```
+
+Import subscription requests:
+
+```bash
+python -m arxiv_digest.mail_cli import-subscriptions \
+  --output-dir subscribers
+```
+
+Each accepted request is stored as one JSON profile under `subscribers/`.
+
+## Digest Format
+
+Daily digests use a stable research-note structure:
+
+- paper information and read priority
+- 30-second takeaways
+- background and scientific question
+- method and technical route
+- key results
+- figure/full-text reading hints
+- physical picture
+- novelty and value
+- limitations and assumptions
+- relation to the subscriber profile
+- recommended reading positions
+- follow-up questions
 
 Run parser tests:
 

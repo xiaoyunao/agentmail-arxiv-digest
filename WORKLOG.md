@@ -2,6 +2,24 @@
 
 ## 2026-06-26
 
+- Task: Stabilize daily digest format, simplify subscriber email format, and add runtime cleanup.
+- Files changed: `arxiv_digest/summary.py`, `arxiv_digest/render.py`, `arxiv_digest/codex_backend.py`, `arxiv_digest/subscriptions.py`, `arxiv_digest/mail_cli.py`, `arxiv_digest/cleanup.py`, `tests/test_subscriptions.py`, `tests/test_cleanup.py`, `README.md`, `docs/ARCHITECTURE.md`, `PLAN.md`, `WORKLOG.md`.
+- Commands run:
+  - `python -m pytest`
+  - `python -m py_compile arxiv_digest/*.py`
+  - `python -m arxiv_digest.cli --mail-file /Users/yunaoxiao/.codex/attachments/504a9cd6-589e-4e30-9faf-0c0fa1908a94/pasted-text.txt --profile profiles.galactic.example.json --triage codex --export-codex-tasks /tmp/codex_tasks_v2.json --output /tmp/recalled_v2.md`
+  - `python -m arxiv_digest.cli --mail-file /Users/yunaoxiao/.codex/attachments/504a9cd6-589e-4e30-9faf-0c0fa1908a94/pasted-text.txt --profile profiles.galactic.example.json --triage codex --import-codex-summaries /tmp/codex_summaries_v2.json --output /tmp/final_digest_v2.md`
+- Key findings:
+  - The previous subscriber parser accepted a YAML-like body; the desired public workflow is a fixed subject plus semicolon-separated terms.
+  - The old summary schema was too shallow for stable daily reports; the new schema mirrors the user's research-reading template while staying short enough for daily mail.
+  - Runtime outputs can be cleaned safely by age; summary cache deletion should remain explicit.
+- Validation result: `pytest` passed 11 tests; `py_compile` passed; smoke Codex import rendered the new stable Markdown digest format.
+- Remaining issues:
+  - Need prepare and confirm the arXiv `astro-ph` subscription email.
+  - Need first real arXiv daily email in `dailyarxiv@agent.qq.com`.
+  - Need outbound send log and duplicate-send guard before scheduling.
+- Next step: Prepare arXiv `astro-ph` subscription email to `astro-ph@arxiv.org` and wait for user confirmation before sending.
+
 - Task: Switch arXiv digest workflow from API-backed summaries to Codex task export/import.
 - Files changed: `.gitignore`, `.env.example`, `arxiv_digest/cache.py`, `arxiv_digest/codex_backend.py`, `arxiv_digest/summary.py`, `arxiv_digest/render.py`, `arxiv_digest/cli.py`, `arxiv_digest/mail.py`, `arxiv_digest/mail_cli.py`, `arxiv_digest/subscriptions.py`, `arxiv_digest/profiles.py`, `arxiv_digest/__init__.py`, `README.md`, `docs/ARCHITECTURE.md`, `PLAN.md`, `pyproject.toml`, `tests/*`, `WORKLOG.md`.
 - Commands run:

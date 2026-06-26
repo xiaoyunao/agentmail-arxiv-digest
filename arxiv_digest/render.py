@@ -66,54 +66,98 @@ def render_summarized_markdown_digest(profile: InterestProfile, summarized: list
         lines.extend(["今天没有匹配该兴趣配置的文章。", ""])
         return "\n".join(lines)
 
-    lines.extend(["## 精读总结", ""])
-    for item in summarized:
+    lines.extend(["## 今日入选文章", ""])
+    for index, item in enumerate(summarized, start=1):
         triaged = item.triaged
         ranked = triaged.ranked
         decision = triaged.decision
         paper = ranked.paper
         summary = item.summary
         cache_note = "cache hit" if item.cache_hit else "new"
+        paper_info = [
+            f"- **标题**：{paper.title}",
+            f"- **arXiv**：[{paper.arxiv_id}]({paper.url})",
+            f"- **作者**：{paper.authors}",
+            f"- **领域**：{', '.join(paper.categories)}",
+            f"- **类型**：{summary.paper_type}",
+            f"- **一句话主题**：{summary.topic_sentence}",
+            f"- **阅读优先级**：{summary.read_priority}",
+            f"- **AI 判读**：{decision.action}, relevance={decision.relevance_score:.2f}",
+            f"- **总结来源**：{cache_note}",
+            f"- **匹配原因**：{summary.why_matched}",
+        ]
+        if summary.suggested_tags:
+            paper_info.append(f"- **标签**：{', '.join(summary.suggested_tags)}")
         lines.extend(
             [
-                f"### {paper.title}",
+                f"### {index}. {paper.title}",
                 "",
-                f"- arXiv: [{paper.arxiv_id}]({paper.url})",
-                f"- Categories: {', '.join(paper.categories)}",
-                f"- Authors: {paper.authors}",
-                f"- AI triage: {decision.action}, relevance={decision.relevance_score:.2f}",
-                f"- Read priority: {summary.read_priority}",
-                f"- Summary source: {cache_note}",
+                "#### 论文信息",
+                "",
+                *paper_info,
+                "",
+                "#### 30 秒读懂",
+                "",
             ]
         )
-        if summary.suggested_tags:
-            lines.append(f"- Tags: {', '.join(summary.suggested_tags)}")
+        _append_bullets(lines, summary.quick_takeaways or (summary.one_sentence_takeaway,))
         lines.extend(
             [
                 "",
-                f"**一句话结论**：{summary.one_sentence_takeaway}",
-                "",
-                f"**为什么匹配**：{summary.why_matched}",
-                "",
-                "**背景与问题**",
+                "#### 背景与科学问题",
                 "",
                 summary.background,
                 "",
-                "**数据与方法**",
+                "#### 方法与技术路线",
                 "",
                 summary.method_data,
                 "",
-                "**主要结果**",
+                "#### 关键结果",
                 "",
-                summary.main_results,
+            ]
+        )
+        _append_bullets(lines, summary.key_results or (summary.main_results,))
+        lines.extend(
+            [
                 "",
-                "**和用户方向的关系**",
+                "#### 图表 / 全文阅读线索",
+                "",
+                summary.figure_guide,
+                "",
+                "#### 物理图像 / 直觉解释",
+                "",
+                summary.physical_picture,
+                "",
+                "#### 创新点与价值",
+                "",
+                summary.novelty_value,
+                "",
+                "#### 局限、假设与潜在问题",
+                "",
+                summary.limitations,
+                "",
+                "#### 和你研究的潜在关系",
                 "",
                 summary.relevance_to_profile,
                 "",
-                "**局限与注意事项**",
+                "#### 建议精读位置",
                 "",
-                summary.limitations,
+                summary.recommended_reading,
+                "",
+                "#### 可继续追问",
+                "",
+            ]
+        )
+        _append_bullets(lines, summary.follow_up_questions)
+        lines.extend(
+            [
+                "",
+                "<details>",
+                "<summary>英文摘要</summary>",
+                "",
+                paper.abstract,
+                "",
+                "</details>",
                 "",
             ]
         )
@@ -147,3 +191,11 @@ def _append_paper_body(lines: list[str], abstract: str) -> None:
             "",
         ]
     )
+
+
+def _append_bullets(lines: list[str], items: tuple[str, ...]) -> None:
+    if not items:
+        lines.append("- 摘要层面未说明。")
+        return
+    for item in items:
+        lines.append(f"- {item}")

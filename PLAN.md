@@ -13,16 +13,18 @@ Build a mailbox-driven daily arXiv digest service using `dailyarxiv@agent.qq.com
 - Broadly recall papers against subscriber interest profiles.
 - Use Codex triage to decide whether recalled papers should be skipped, briefly summarized, or fully read.
 - Generate Chinese personalized summaries through Codex task export/import.
+- Render each selected paper with a stable research-note digest template.
+- Import fixed-format subscription requests with subject `Subscribe to dailyarxiv` and semicolon-separated body terms.
+- Remove old runtime files after daily sends.
 - Send daily digests through Agent Mail after validation.
 
 ## Outstanding Issues
 
 - Re-check `agently-cli auth status` before mailbox operations because OAuth credentials can expire.
-- Implement Codex summary import cache.
 - Add persistent cache for triage decisions if needed after first manual runs.
-- Implement subscriber request email parser.
-- Add persistent storage for subscribers, parsed papers, generated summaries, and send logs.
+- Add persistent storage for parsed papers, generated summaries, and send logs.
 - Add duplicate-send protection before enabling scheduled sends.
+- Decide whether daily cleanup should drop summary cache or keep it for deduplication.
 
 ## Validation Criteria
 
@@ -34,6 +36,9 @@ Build a mailbox-driven daily arXiv digest service using `dailyarxiv@agent.qq.com
 - CLI can parse a saved daily email and produce a profile-filtered Markdown digest.
 - CLI can run an AI-triage-shaped local flow without requiring an API key.
 - CLI can export Codex review tasks and import Codex-produced summaries.
+- Subscription import accepts `Subscribe to dailyarxiv` emails and ignores other subjects.
+- Final digest uses the stable daily research-note template.
+- Cleanup command removes old runtime files and only drops cache with an explicit flag.
 
 ## Next Recommended Steps
 
@@ -41,3 +46,4 @@ Build a mailbox-driven daily arXiv digest service using `dailyarxiv@agent.qq.com
 - Use the current parser/CLI on the first received daily email.
 - Use Codex task export/import on one real daily email and inspect false positives/false negatives before enabling sends.
 - Add a manual one-recipient send workflow before scheduling.
+- Add outbound send log and duplicate-send guard.

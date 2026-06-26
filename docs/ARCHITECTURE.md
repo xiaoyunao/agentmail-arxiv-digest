@@ -41,43 +41,16 @@ arXiv astro-ph daily mail
 A simple first version can require users to send a mail with subject:
 
 ```text
-subscribe arxiv-digest
+Subscribe to dailyarxiv
 ```
 
 Body:
 
-```yaml
-email: user@example.com
-language: zh
-categories:
-  - astro-ph.GA
-research_interests:
-  - 银河系结构与形成演化
-  - stellar halo
-  - stellar streams
-  - dwarf galaxies
-favorite_authors:
-  - Lina Necib
-  - Ting S. Li
-must_keywords:
-  - Milky Way
-  - dwarf galaxy
-  - stellar stream
-boost_keywords:
-  - Gaia
-  - DESI
-  - S5
-exclude_keywords:
-  - exoplanet
-max_papers: 8
-recall_limit: 40
-ai_triage_threshold: 0.65
-summary_requirements: >
-  只关注银河系相关方向；对星流、矮星系、银河晕、Local Group、暗物质动力学特别关注。
-  感兴趣文章需要中文详细总结：研究背景、核心问题、数据/方法、主要结果、局限性、为什么值得读。
+```text
+dark matter; little red dot; yunao xiao; stellar streams; dwarf galaxies
 ```
 
-The first implementation can store accepted profiles as JSON files. Later versions can move to SQLite.
+The sender address becomes the digest recipient. The body is parsed only as data: semicolon- or newline-separated terms are saved as research interests and boost keywords. Terms may be directions, fixed objects, keywords, or author names. The first implementation stores accepted profiles as JSON files. Later versions can move to SQLite.
 
 ## Codex Relevance Triage Contract
 
@@ -110,12 +83,23 @@ Suggested output fields:
 
 - `one_sentence_takeaway`
 - `why_matched`
+- `paper_type`
+- `topic_sentence`
+- `quick_takeaways`
 - `background`
 - `method_data`
+- `key_results`
 - `main_results`
+- `figure_guide`
+- `physical_picture`
+- `novelty_value`
 - `relevance_to_profile`
 - `limitations`
+- `recommended_reading`
+- `follow_up_questions`
 - `read_priority`
+
+The renderer converts these fields into a stable daily research-note format derived from the user's single-paper reading template. The tone should be specific and technical, not generic AI prose.
 
 The API path remains optional, but it is not required for the Codex-backed workflow.
 
@@ -127,6 +111,7 @@ The API path remains optional, but it is not required for the Codex-backed workf
 - For early testing, send digests only to the owner address.
 - Keep an outbound send log to avoid duplicate sends.
 - Keep raw arXiv email IDs and parsed paper IDs for auditability.
+- After every daily run, remove old `data/` and `out/` runtime files. Delete `.arxiv_digest_cache.sqlite3*` only when explicitly requested, because it deduplicates imported Codex summaries.
 
 ## MVP Stages
 

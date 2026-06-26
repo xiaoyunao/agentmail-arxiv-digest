@@ -3,33 +3,47 @@ from __future__ import annotations
 import json
 from pathlib import Path
 import re
-from typing import Any
 
 from .profiles import InterestProfile
 
 DEFAULT_SUBSCRIBER_DIR = "subscribers"
+SUBSCRIBE_SUBJECT = "Subscribe to dailyarxiv"
+DEFAULT_ASTROPH_CATEGORIES = (
+    "astro-ph.GA",
+    "astro-ph.CO",
+    "astro-ph.EP",
+    "astro-ph.HE",
+    "astro-ph.IM",
+    "astro-ph.SR",
+)
 
 
 def parse_subscription_request(body: str, sender_email: str) -> InterestProfile:
-    data = _parse_simple_profile(body)
-    recipient = str(data.get("email") or sender_email).strip()
-    name = str(data.get("name") or recipient).strip()
+    recipient = sender_email.strip()
+    if not recipient:
+        raise ValueError("subscription request is missing sender email")
+    terms = _parse_semicolon_terms(body)
+    if not terms:
+        raise ValueError("subscription request body must contain at least one semicolon-separated interest term")
+    summary_requirements = (
+        "只根据这些兴趣线索筛选 astro-ph daily："
+        + "; ".join(terms)
+        + "。先宽松召回，再由 Codex 判断语义相关性；入选文章用中文科研笔记格式总结。"
+    )
     return InterestProfile(
-        name=name,
+        name=recipient,
         recipient=recipient,
-        language=str(data.get("language", "zh")),
-        include_categories=tuple(data.get("categories", ["astro-ph.GA"])),
-        research_interests=tuple(data.get("research_interests", [])),
-        must_keywords=tuple(data.get("must_keywords", [])),
-        boost_keywords=tuple(data.get("boost_keywords", [])),
-        exclude_keywords=tuple(data.get("exclude_keywords", [])),
-        favorite_authors=tuple(data.get("favorite_authors", [])),
-        max_papers=int(data.get("max_papers", 8)),
-        min_score=int(data.get("min_score", 1)),
-        recall_limit=int(data.get("recall_limit", 40)),
-        ai_triage_threshold=float(data.get("ai_triage_threshold", 0.65)),
-        summary_requirements=str(data.get("summary_requirements", "")),
-        metadata={"source": "email-subscription"},
+        language="zh",
+        include_categories=DEFAULT_ASTROPH_CATEGORIES,
+        research_interests=tuple(terms),
+        boost_keywords=tuple(terms),
+        favorite_authors=tuple(terms),
+        max_papers=8,
+        min_score=1,
+        recall_limit=50,
+        ai_triage_threshold=0.65,
+        summary_requirements=summary_requirements,
+        metadata={"source": "email-subscription", "format": "semicolon-v1"},
     )
 
 
@@ -65,36 +79,25 @@ def load_profiles(directory: str | Path = DEFAULT_SUBSCRIBER_DIR) -> list[Intere
     return [InterestProfile.from_json_file(path) for path in sorted(root.glob("*.json"))]
 
 
-def _parse_simple_profile(body: str) -> dict[str, Any]:
-    data: dict[str, Any] = {}
-    current_key: str | None = None
-    for raw_line in body.splitlines():
-        line = raw_line.rstrip()
-        stripped = line.strip()
-        if not stripped or stripped.startswith("#"):
+def is_subscription_subject(subject: str) -> bool:
+    return subject.strip().casefold() == SUBSCRIBE_SUBJECT.casefold()
+
+
+def _parse_semicolon_terms(body: str) -> list[str]:
+    normalized = body.replace("\r\n", "\n").replace("\r", "\n")
+    raw_terms = re.split(r"[;\n]+", normalized)
+    terms: list[str] = []
+    seen: set[str] = set()
+    for raw_term in raw_terms:
+        term = re.sub(r"\s+", " ", raw_term.strip())
+        if not term:
             continue
-        if stripped.startswith("- ") and current_key:
-            data.setdefault(current_key, []).append(stripped[2:].strip())
+        key = term.casefold()
+        if key in seen:
             continue
-        if ":" not in line:
-            if current_key == "summary_requirements":
-                data[current_key] = f"{data.get(current_key, '')}\n{stripped}".strip()
-            continue
-        key, value = line.split(":", 1)
-        key = key.strip()
-        value = value.strip()
-        current_key = key
-        if value == "":
-            data[key] = []
-        elif key in {"max_papers", "min_score", "recall_limit"}:
-            data[key] = int(value)
-        elif key == "ai_triage_threshold":
-            data[key] = float(value)
-        elif key == "summary_requirements":
-            data[key] = value
-        else:
-            data[key] = value
-    return data
+        seen.add(key)
+        terms.append(term)
+    return terms
 
 
 def _safe_profile_name(email: str) -> str:
