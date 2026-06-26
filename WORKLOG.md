@@ -2,6 +2,27 @@
 
 ## 2026-06-26
 
+- Task: Add AI relevance triage layer before detailed arXiv summaries.
+- Files changed: `arxiv_digest/triage.py`, `arxiv_digest/llm.py`, `arxiv_digest/ranker.py`, `arxiv_digest/profiles.py`, `arxiv_digest/render.py`, `arxiv_digest/cli.py`, `profiles.galactic.example.json`, `docs/ARCHITECTURE.md`, `README.md`, `PLAN.md`, `tests/test_ranker.py`, `WORKLOG.md`.
+- Commands run:
+  - `git status`
+  - `git branch --show-current`
+  - `git fetch --all --prune`
+  - `git log --oneline --decorate --graph -n 15 --all`
+  - `python -m pytest`
+  - `python -m py_compile arxiv_digest/*.py`
+  - `python -m arxiv_digest.cli --mail-file /Users/yunaoxiao/.codex/attachments/504a9cd6-589e-4e30-9faf-0c0fa1908a94/pasted-text.txt --profile profiles.galactic.example.json --triage heuristic-ai --output /tmp/galactic-ai-triage.md`
+- Key findings:
+  - Keyword/author/profile matching should be a broad recall stage, not the final relevance decision.
+  - AI triage should see profile semantics, title, authors, categories, comments, abstract, URL, and recall signals.
+  - Triage output should explicitly choose `skip`, `short`, or `full_read` before expensive detailed summarization.
+  - Current OpenAI docs recommend the Responses API and small GPT-5.4 variants for lower-cost workloads; triage defaults to `gpt-5.4-mini` unless `OPENAI_TRIAGE_MODEL` is set.
+- Validation result: `pytest` passed 3 tests; `py_compile` passed; heuristic AI-triage smoke run generated a Markdown digest.
+- Remaining issues:
+  - Need live OpenAI triage test with an API key.
+  - Need persistent triage cache and detailed summarizer.
+- Next step: Add cached GPT summary generation for triage-approved papers.
+
 - Task: Start arXiv daily digest service prototype for `dailyarxiv@agent.qq.com`.
 - Files changed: `.gitignore`, `pyproject.toml`, `arxiv_digest/*`, `tests/*`, `profiles.galactic.example.json`, `docs/ARCHITECTURE.md`, `README.md`, `PLAN.md`, `WORKLOG.md`.
 - Commands run:

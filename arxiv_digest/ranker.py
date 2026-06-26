@@ -15,6 +15,18 @@ class RankedPaper:
 
 
 def rank_papers(papers: list[ArxivPaper], profile: InterestProfile) -> list[RankedPaper]:
+    recalled = recall_papers(papers, profile, limit=profile.recall_limit)
+    ranked = [item for item in recalled if item.score >= profile.min_score]
+    return ranked[: profile.max_papers]
+
+
+def recall_papers(
+    papers: list[ArxivPaper],
+    profile: InterestProfile,
+    *,
+    limit: int | None = None,
+) -> list[RankedPaper]:
+    """Broadly recall category-compatible papers before AI relevance triage."""
     ranked: list[RankedPaper] = []
     include_categories = set(profile.include_categories)
 
@@ -28,6 +40,11 @@ def rank_papers(papers: list[ArxivPaper], profile: InterestProfile) -> list[Rank
         score = 0
         reasons: list[str] = []
 
+        for interest in profile.research_interests:
+            if _keyword_matches(text, interest):
+                score += 2
+                reasons.append(f"interest:{interest}")
+
         for keyword in profile.must_keywords:
             if _keyword_matches(text, keyword):
                 score += 3
@@ -38,11 +55,17 @@ def rank_papers(papers: list[ArxivPaper], profile: InterestProfile) -> list[Rank
                 score += 1
                 reasons.append(f"boost:{keyword}")
 
-        if score >= profile.min_score:
-            ranked.append(RankedPaper(paper=paper, score=score, reasons=tuple(reasons)))
+        for author in profile.favorite_authors:
+            if _keyword_matches(paper.authors.lower(), author):
+                score += 4
+                reasons.append(f"author:{author}")
+
+        ranked.append(RankedPaper(paper=paper, score=score, reasons=tuple(reasons)))
 
     ranked.sort(key=lambda item: (-item.score, item.paper.arxiv_id))
-    return ranked[: profile.max_papers]
+    if limit is not None:
+        return ranked[:limit]
+    return ranked
 
 
 def _keyword_matches(text: str, keyword: str) -> bool:

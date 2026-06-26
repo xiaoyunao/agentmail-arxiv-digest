@@ -23,6 +23,32 @@ python -m arxiv_digest.cli \
   --output digest.md
 ```
 
+Run the AI-triage-shaped local flow without calling any paid API:
+
+```bash
+python -m arxiv_digest.cli \
+  --mail-file /path/to/arxiv-daily.txt \
+  --profile profiles.galactic.example.json \
+  --triage heuristic-ai \
+  --output digest.md
+```
+
+Run the OpenAI API triage flow:
+
+```bash
+OPENAI_API_KEY=... python -m arxiv_digest.cli \
+  --mail-file /path/to/arxiv-daily.txt \
+  --profile profiles.galactic.example.json \
+  --triage openai \
+  --output digest.md
+```
+
+Override the triage model if needed:
+
+```bash
+OPENAI_API_KEY=... OPENAI_TRIAGE_MODEL=gpt-5.4-mini python -m arxiv_digest.cli ...
+```
+
 Run parser tests:
 
 ```bash
