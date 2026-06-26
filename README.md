@@ -1,6 +1,6 @@
-# Agent Mail Workspace
+# Agent Mail arXiv Digest Workspace
 
-This workspace records the local Agent Mail CLI setup used for the QQ Agent Mail account.
+This workspace records the local Agent Mail CLI setup and the arXiv daily digest service prototype.
 
 ## Current Setup
 
@@ -10,7 +10,26 @@ This workspace records the local Agent Mail CLI setup used for the QQ Agent Mail
 - Installed path: `/opt/homebrew/bin/agently-cli`
 - Global skill: `agently-mail`
 - Skill path: `/Users/yunaoxiao/.agents/skills/agently-mail`
-- Authorized mailbox: `bitdancing@agent.qq.com`
+- Authorized mailbox: `dailyarxiv@agent.qq.com`
+
+## arXiv Digest Prototype
+
+Parse a saved arXiv daily email and render a profile-filtered Markdown digest:
+
+```bash
+python -m arxiv_digest.cli \
+  --mail-file /path/to/arxiv-daily.txt \
+  --profile profiles.galactic.example.json \
+  --output digest.md
+```
+
+Run parser tests:
+
+```bash
+python -m pytest
+```
+
+The service architecture is documented in `docs/ARCHITECTURE.md`.
 
 ## Useful Commands
 

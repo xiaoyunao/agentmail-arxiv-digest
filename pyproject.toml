@@ -1,0 +1,13 @@
+[project]
+name = "agentmail-arxiv-digest"
+version = "0.1.0"
+description = "Parse arXiv daily mail and build personalized astronomy digests."
+requires-python = ">=3.10"
+dependencies = []
+
+[project.scripts]
+arxiv-digest = "arxiv_digest.cli:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

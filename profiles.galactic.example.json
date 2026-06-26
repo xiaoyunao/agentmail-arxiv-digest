@@ -1,0 +1,35 @@
+{
+  "name": "Galactic archaeology focus",
+  "recipient": "dailyarxiv@agent.qq.com",
+  "language": "zh",
+  "include_categories": ["astro-ph.GA"],
+  "must_keywords": [
+    "Milky Way",
+    "Galactic",
+    "dwarf",
+    "dwarf galaxy",
+    "stellar stream",
+    "stream",
+    "halo",
+    "Draco",
+    "Bootes"
+  ],
+  "boost_keywords": [
+    "Gaia",
+    "DESI",
+    "S5",
+    "dark matter",
+    "kinematics",
+    "metallicity",
+    "satellite",
+    "Local Group"
+  ],
+  "exclude_keywords": [
+    "exoplanet",
+    "asteroid",
+    "solar flare"
+  ],
+  "max_papers": 10,
+  "min_score": 3,
+  "summary_requirements": "只关注银河系相关方向；对星流、矮星系、银河晕、Local Group、暗物质动力学特别关注。感兴趣文章需要中文详细总结：研究背景、核心问题、数据/方法、主要结果、局限性、为什么值得读。"
+}
