@@ -2,6 +2,28 @@
 
 ## 2026-06-26
 
+- Task: Switch arXiv digest workflow from API-backed summaries to Codex task export/import.
+- Files changed: `.gitignore`, `.env.example`, `arxiv_digest/cache.py`, `arxiv_digest/codex_backend.py`, `arxiv_digest/summary.py`, `arxiv_digest/render.py`, `arxiv_digest/cli.py`, `arxiv_digest/mail.py`, `arxiv_digest/mail_cli.py`, `arxiv_digest/subscriptions.py`, `arxiv_digest/profiles.py`, `arxiv_digest/__init__.py`, `README.md`, `docs/ARCHITECTURE.md`, `PLAN.md`, `pyproject.toml`, `tests/*`, `WORKLOG.md`.
+- Commands run:
+  - `git status`
+  - `git branch --show-current`
+  - `git fetch --all --prune`
+  - `git log --oneline --decorate --graph -n 15 --all`
+  - `python -m arxiv_digest.cli --mail-file /Users/yunaoxiao/.codex/attachments/504a9cd6-589e-4e30-9faf-0c0fa1908a94/pasted-text.txt --profile profiles.galactic.example.json --triage codex --export-codex-tasks /tmp/codex_tasks.json --output /tmp/recalled.md`
+  - `python -m arxiv_digest.cli --mail-file /Users/yunaoxiao/.codex/attachments/504a9cd6-589e-4e30-9faf-0c0fa1908a94/pasted-text.txt --profile profiles.galactic.example.json --triage codex --import-codex-summaries /tmp/codex_summaries.json --output /tmp/final-digest.md`
+  - `python -m pytest`
+  - `python -m py_compile arxiv_digest/*.py`
+- Key findings:
+  - ChatGPT Pro cannot be used as a backend API without separate API billing, so production workflow should use Codex task packages.
+  - Codex task export now asks Codex to perform semantic triage and summary together, avoiding heuristic keyword-only triage.
+  - Agent Mail send is wired as prepare/confirm commands but should not auto-confirm without review.
+- Validation result: `pytest` passed 8 tests; `py_compile` passed; sample arXiv mail exported Codex tasks, imported a test Codex summary, rendered final digest, and wrote ignored local summary cache.
+- Remaining issues:
+  - Need first real arXiv daily email in `dailyarxiv@agent.qq.com`.
+  - Need real Codex summary pass on exported tasks.
+  - Need manual review before enabling any scheduled send behavior.
+- Next step: Subscribe `dailyarxiv@agent.qq.com` to arXiv astro-ph daily, fetch first real message, and run Codex review workflow.
+
 - Task: Add local `.env` support for OpenAI API credentials.
 - Files changed: `.gitignore`, `.env.example`, `arxiv_digest/env.py`, `arxiv_digest/cli.py`, `README.md`, `WORKLOG.md`.
 - Commands run:

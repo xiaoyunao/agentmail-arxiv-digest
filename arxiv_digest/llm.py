@@ -7,10 +7,18 @@ import urllib.request
 
 from .profiles import InterestProfile
 from .ranker import RankedPaper
+from .summary import (
+    SUMMARY_PROMPT_VERSION,
+    SUMMARY_SCHEMA,
+    SummarizedPaper,
+    build_summary_prompt,
+    parse_paper_summary,
+)
 from .triage import TRIAGE_SCHEMA, TriagedPaper, build_triage_prompt, parse_triage_decision, select_triaged
 
 
 DEFAULT_TRIAGE_MODEL = "gpt-5.4-mini"
+DEFAULT_SUMMARY_MODEL = "gpt-5.4"
 
 
 class OpenAITriageClient:
@@ -55,11 +63,57 @@ class OpenAITriageClient:
         return TriagedPaper(ranked=ranked, decision=decision)
 
     def _post_json(self, payload: dict) -> dict:
+        return _post_json(self.api_key, payload)
+
+
+class OpenAISummaryClient:
+    """OpenAI Responses API client for detailed paper summaries."""
+
+    def __init__(self, api_key: str | None = None, model: str | None = None) -> None:
+        self.api_key = api_key or os.environ.get("OPENAI_API_KEY")
+        self.model = model or os.environ.get("OPENAI_SUMMARY_MODEL", DEFAULT_SUMMARY_MODEL)
+        if not self.api_key:
+            raise ValueError("OPENAI_API_KEY is required for OpenAI summaries")
+
+    def summarize_one(self, profile: InterestProfile, triaged: TriagedPaper) -> SummarizedPaper:
+        payload = {
+            "model": self.model,
+            "reasoning": {"effort": "medium"},
+            "input": [
+                {
+                    "role": "system",
+                    "content": [
+                        {
+                            "type": "input_text",
+                            "text": "Return only valid JSON for the requested schema.",
+                        }
+                    ],
+                },
+                {
+                    "role": "user",
+                    "content": [{"type": "input_text", "text": build_summary_prompt(profile, triaged)}],
+                },
+            ],
+            "text": {
+                "format": {
+                    "type": "json_schema",
+                    "name": "arxiv_paper_summary",
+                    "schema": SUMMARY_SCHEMA,
+                    "strict": True,
+                }
+            },
+        }
+        response = _post_json(self.api_key, payload)
+        summary = parse_paper_summary(_extract_response_text(response), triaged.ranked.paper.arxiv_id)
+        return SummarizedPaper(triaged=triaged, summary=summary)
+
+
+def _post_json(api_key: str, payload: dict) -> dict:
         request = urllib.request.Request(
             "https://api.openai.com/v1/responses",
             data=json.dumps(payload).encode("utf-8"),
             headers={
-                "Authorization": f"Bearer {self.api_key}",
+                "Authorization": f"Bearer {api_key}",
                 "Content-Type": "application/json",
             },
             method="POST",
@@ -80,6 +134,16 @@ def triage_with_openai(
 ) -> list[TriagedPaper]:
     client = OpenAITriageClient(model=model)
     return select_triaged(profile, [client.triage_one(profile, item) for item in ranked])
+
+
+def summarize_with_openai(
+    profile: InterestProfile,
+    triaged: list[TriagedPaper],
+    *,
+    model: str | None = None,
+) -> list[SummarizedPaper]:
+    client = OpenAISummaryClient(model=model)
+    return [client.summarize_one(profile, item) for item in triaged]
 
 
 def _extract_response_text(response: dict) -> str:

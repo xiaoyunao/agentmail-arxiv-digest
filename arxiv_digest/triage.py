@@ -132,7 +132,7 @@ def heuristic_triage(profile: InterestProfile, ranked: RankedPaper) -> TriageDec
         arxiv_id=ranked.paper.arxiv_id,
         action=action,
         relevance_score=relevance,
-        reason="本地启发式判读：基于规则召回分数和匹配信号，供未配置 GPT API 时测试流程。",
+        reason="本地启发式判读：基于规则召回分数和匹配信号，仅供测试流程。",
         matched_interests=ranked.reasons,
     )
 

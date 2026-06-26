@@ -33,28 +33,39 @@ python -m arxiv_digest.cli \
   --output digest.md
 ```
 
-Run the OpenAI API triage flow:
+Run the Codex-backed workflow:
 
 ```bash
-OPENAI_API_KEY=... python -m arxiv_digest.cli \
-  --mail-file /path/to/arxiv-daily.txt \
+# 1. Fetch the latest arXiv daily email once the mailbox is subscribed.
+python -m arxiv_digest.mail_cli latest-arxiv \
+  --output data/latest-astro-ph.txt
+
+# 2. Export broad-recall papers for Codex semantic triage and summary.
+python -m arxiv_digest.cli \
+  --mail-file data/latest-astro-ph.txt \
   --profile profiles.galactic.example.json \
-  --triage openai \
-  --output digest.md
+  --triage codex \
+  --export-codex-tasks codex_tasks.json \
+  --output out/recalled.md
+
+# 3. Ask Codex to read codex_tasks.json and write codex_summaries.json.
+
+# 4. Import Codex summaries, cache them, and render the final digest.
+python -m arxiv_digest.cli \
+  --mail-file data/latest-astro-ph.txt \
+  --profile profiles.galactic.example.json \
+  --triage codex \
+  --import-codex-summaries codex_summaries.json \
+  --output out/digest.md
+
+# 5. Prepare the outgoing email; confirm only after reviewing the summary.
+python -m arxiv_digest.mail_cli prepare-send \
+  --to user@example.com \
+  --subject "Daily arXiv digest" \
+  --body-file out/digest.md
 ```
 
-Or put credentials in a local `.env` file, which is ignored by git:
-
-```bash
-cp .env.example .env
-chmod 600 .env
-```
-
-Override the triage model if needed:
-
-```bash
-OPENAI_API_KEY=... OPENAI_TRIAGE_MODEL=gpt-5.4-mini python -m arxiv_digest.cli ...
-```
+The optional OpenAI API path remains in code for future use, but the planned workflow above does not require API billing.
 
 Run parser tests:
 

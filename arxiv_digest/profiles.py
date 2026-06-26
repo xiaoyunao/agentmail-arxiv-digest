@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 import json
 from pathlib import Path
+from typing import Any
 
 
 @dataclass(frozen=True)
@@ -22,6 +23,19 @@ class InterestProfile:
     ai_triage_threshold: float = 0.65
     summary_requirements: str = ""
     metadata: dict[str, str] = field(default_factory=dict)
+
+    def cache_payload(self) -> dict[str, Any]:
+        return {
+            "name": self.name,
+            "language": self.language,
+            "include_categories": list(self.include_categories),
+            "research_interests": list(self.research_interests),
+            "must_keywords": list(self.must_keywords),
+            "boost_keywords": list(self.boost_keywords),
+            "exclude_keywords": list(self.exclude_keywords),
+            "favorite_authors": list(self.favorite_authors),
+            "summary_requirements": self.summary_requirements,
+        }
 
     @classmethod
     def from_json_file(cls, path: str | Path) -> "InterestProfile":

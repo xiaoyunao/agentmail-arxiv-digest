@@ -8,18 +8,18 @@ Build a mailbox-driven daily arXiv digest service:
 2. Parse the fixed-format daily arXiv email into structured paper records.
 3. Maintain subscriber profiles from fixed-format request emails.
 4. Broadly recall potentially relevant papers using categories, authors, keywords, and user interests.
-5. Use a low-cost GPT API triage call to decide whether each recalled paper is `skip`, `short`, or `full_read`.
-6. Generate personalized Chinese digests only for triage-approved papers.
+5. Use Codex to decide whether each recalled paper is `skip`, `short`, or `full_read`.
+6. Use Codex to generate personalized Chinese digests only for triage-approved papers.
 7. Send each subscriber only the papers matching their direction and requirements.
 
-## Why GPT API Instead of Codex
+## Why Codex Instead of API For Now
 
-Codex should be used for development and operations. The production summarizer should call the OpenAI API directly because:
+ChatGPT Pro does not include general OpenAI API usage. Because the current constraint is to avoid separate API billing, the production path uses Codex task export/import:
 
-- API usage can be metered, logged, cached, retried, and rate-limited independently.
-- The summarization prompt can be versioned in the repository.
-- Each paper summary can be cached by `(arxiv_id, prompt_version, profile_signature)`.
-- The service can run unattended from cron, a server, or GitHub Actions without consuming Codex interactive quota.
+- The parser, recall, subscription, rendering, and mail plumbing are normal Python code.
+- Codex performs the semantic triage and Chinese summaries from structured task files.
+- Summaries are imported and cached by `(arxiv_id, prompt_version, profile_signature)`.
+- This is not fully unattended, but it avoids API billing and keeps the later API/local-model backend replaceable.
 
 ## Data Flow
 
@@ -29,8 +29,9 @@ arXiv astro-ph daily mail
   -> arxiv_digest.parser.parse_daily_email
   -> normalized paper table
   -> broad deterministic recall with profile signals
-  -> GPT API relevance triage
-  -> GPT API detailed summary generation
+  -> Codex task export
+  -> Codex semantic triage and detailed summary
+  -> Codex summary import/cache
   -> Markdown/HTML digest rendering
   -> agently-cli message +send
 ```
@@ -78,7 +79,7 @@ summary_requirements: >
 
 The first implementation can store accepted profiles as JSON files. Later versions can move to SQLite.
 
-## Relevance Triage Contract
+## Codex Relevance Triage Contract
 
 The deterministic ranking stage is only a recall layer. It should be generous enough to avoid missing papers:
 
@@ -87,7 +88,7 @@ The deterministic ranking stage is only a recall layer. It should be generous en
 - filter only hard exclusions;
 - pass the top `recall_limit` papers to AI triage.
 
-The AI triage model sees the full profile plus title, authors, categories, comments, abstract, URL, and recall signals. It returns:
+Codex sees the full profile plus title, authors, categories, comments, abstract, URL, and recall signals. It returns:
 
 - `action`: `skip`, `short`, or `full_read`
 - `relevance_score`: 0 to 1
@@ -95,11 +96,11 @@ The AI triage model sees the full profile plus title, authors, categories, comme
 - `matched_interests`: true semantic matches, not just raw keywords
 - `concerns`: uncertainty or edge-case notes
 
-This keeps keywords and author names useful as hints while letting the model decide semantic relevance.
+This keeps keywords and author names useful as hints while letting Codex decide semantic relevance.
 
-## GPT Summary Contract
+## Summary Contract
 
-For each selected paper, send the model:
+For each selected paper, send Codex:
 
 - arXiv ID, title, authors, categories, comments, abstract, URL.
 - Subscriber profile.
@@ -116,7 +117,7 @@ Suggested output fields:
 - `limitations`
 - `read_priority`
 
-Use a compact model for first-pass triage and a stronger model only for selected papers that pass the profile threshold. The prototype defaults to `OPENAI_TRIAGE_MODEL` or `gpt-5.4-mini`, and sends triage requests through the Responses API with low reasoning effort.
+The API path remains optional, but it is not required for the Codex-backed workflow.
 
 ## Safety and Operations
 
@@ -131,9 +132,9 @@ Use a compact model for first-pass triage and a stronger model only for selected
 
 1. Parser and local profile matching.
 2. Manual CLI run on pasted arXiv email.
-3. AI triage contract and OpenAI API triage call.
+3. Codex task export/import contract.
 4. Fetch latest arXiv email from `dailyarxiv@agent.qq.com`.
-5. GPT API summary generator with cache.
+5. Codex summary import/cache.
 6. Manual send to one test recipient.
 7. Subscriber request parser.
 8. Scheduled daily run.

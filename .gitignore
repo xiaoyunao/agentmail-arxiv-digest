@@ -5,6 +5,12 @@ __pycache__/
 venv/
 *.egg-info/
 digest.md
+data/
+out/
+subscribers/
+codex_tasks*.json
+codex_summaries*.json
+.arxiv_digest_cache.sqlite3
+.arxiv_digest_cache.sqlite3-*
 .env
 .env.*
-!.env.example

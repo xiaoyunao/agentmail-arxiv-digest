@@ -1,0 +1,71 @@
+from __future__ import annotations
+
+import argparse
+from pathlib import Path
+
+from .mail import prepare_send, read_message, search_messages
+from .subscriptions import parse_subscription_request, save_profile
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="Agent Mail helpers for arXiv digest workflows.")
+    sub = parser.add_subparsers(dest="command", required=True)
+
+    latest = sub.add_parser("latest-arxiv", help="Fetch latest arXiv daily email body to a file.")
+    latest.add_argument("--query", default="astro-ph daily", help="Search query for arXiv daily email.")
+    latest.add_argument("--output", required=True, help="Output text path.")
+    latest.add_argument("--limit", type=int, default=10)
+
+    subs = sub.add_parser("import-subscriptions", help="Import fixed-format subscription request emails.")
+    subs.add_argument("--query", default="subscribe arxiv-digest")
+    subs.add_argument("--limit", type=int, default=20)
+    subs.add_argument("--output-dir", default="subscribers")
+
+    send = sub.add_parser("prepare-send", help="Prepare a digest email and print confirmation details.")
+    send.add_argument("--to", required=True)
+    send.add_argument("--subject", required=True)
+    send.add_argument("--body-file", required=True)
+
+    return parser
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = build_parser().parse_args(argv)
+    if args.command == "latest-arxiv":
+        message = _latest_message(args.query, args.limit)
+        body = read_message(message["message_id"])["data"]["body"]
+        Path(args.output).write_text(body, encoding="utf-8")
+        print(f"wrote {args.output} from {message['message_id']}")
+        return 0
+
+    if args.command == "import-subscriptions":
+        result = search_messages(args.query, limit=args.limit)
+        imported = []
+        for message in result["data"].get("data", []):
+            full = read_message(message["message_id"])["data"]
+            sender = full.get("from", {}).get("email", "")
+            profile = parse_subscription_request(full.get("body", ""), sender)
+            imported.append(save_profile(profile, args.output_dir))
+        for path in imported:
+            print(path)
+        return 0
+
+    if args.command == "prepare-send":
+        body = Path(args.body_file).read_text(encoding="utf-8")
+        result = prepare_send(args.to, args.subject, body)
+        print(result)
+        return 0
+
+    raise SystemExit(f"unknown command: {args.command}")
+
+
+def _latest_message(query: str, limit: int) -> dict:
+    result = search_messages(query, limit=limit)
+    messages = result["data"].get("data", [])
+    if not messages:
+        raise SystemExit(f"no messages found for query: {query}")
+    return messages[0]
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

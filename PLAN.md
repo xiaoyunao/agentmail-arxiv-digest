@@ -11,15 +11,15 @@ Build a mailbox-driven daily arXiv digest service using `dailyarxiv@agent.qq.com
 - Confirm OAuth authorization for `dailyarxiv@agent.qq.com`.
 - Parse fixed-format arXiv daily emails into structured paper records.
 - Broadly recall papers against subscriber interest profiles.
-- Use AI triage to decide whether recalled papers should be skipped, briefly summarized, or fully read.
-- Generate Chinese personalized summaries through GPT API calls.
+- Use Codex triage to decide whether recalled papers should be skipped, briefly summarized, or fully read.
+- Generate Chinese personalized summaries through Codex task export/import.
 - Send daily digests through Agent Mail after validation.
 
 ## Outstanding Issues
 
 - Re-check `agently-cli auth status` before mailbox operations because OAuth credentials can expire.
-- Implement GPT API summarization and cache.
-- Add persistent cache for AI triage decisions.
+- Implement Codex summary import cache.
+- Add persistent cache for triage decisions if needed after first manual runs.
 - Implement subscriber request email parser.
 - Add persistent storage for subscribers, parsed papers, generated summaries, and send logs.
 - Add duplicate-send protection before enabling scheduled sends.
@@ -33,11 +33,11 @@ Build a mailbox-driven daily arXiv digest service using `dailyarxiv@agent.qq.com
 - Parser tests pass on wrapped arXiv daily entries.
 - CLI can parse a saved daily email and produce a profile-filtered Markdown digest.
 - CLI can run an AI-triage-shaped local flow without requiring an API key.
+- CLI can export Codex review tasks and import Codex-produced summaries.
 
 ## Next Recommended Steps
 
 - Subscribe `dailyarxiv@agent.qq.com` to arXiv `astro-ph` daily emails.
 - Use the current parser/CLI on the first received daily email.
-- Add OpenAI API summarization with schema validation and caching.
-- Use OpenAI triage on one real daily email and inspect false positives/false negatives before enabling sends.
+- Use Codex task export/import on one real daily email and inspect false positives/false negatives before enabling sends.
 - Add a manual one-recipient send workflow before scheduling.
