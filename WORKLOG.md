@@ -2,6 +2,22 @@
 
 ## 2026-06-26
 
+- Task: Adjust subscription monitor schedule, public README wording, and GitHub visibility.
+- Files changed: `README.md`, `WORKLOG.md`.
+- Commands run:
+  - `gh repo edit xiaoyunao/agentmail-arxiv-digest --visibility public --accept-visibility-change-consequences`
+  - `python -m pytest`
+  - `python -m py_compile arxiv_digest/*.py`
+- Key findings:
+  - Subscription monitor should run once daily at 12:00 Beijing time, not hourly.
+  - Public README examples should avoid real names.
+  - `dailyarxiv@agent.qq.com` can receive mail through Agent Mail, but unattended outgoing mail still needs SMTP because Agent Mail writes require confirmation.
+- Validation result: `pytest` passed 16 tests; `py_compile` passed; GitHub repository visibility is now public.
+- Remaining issues:
+  - Need production SMTP credentials in local `.env`.
+  - Need first real arXiv daily email to validate end-to-end daily digest.
+- Next step: Configure SMTP credentials and run a receipt/digest send smoke test.
+
 - Task: Fix GitHub Actions, rewrite public README for subscribers, and add subscription receipt deduplication.
 - Files changed: `.github/workflows/tests.yml`, `README.md`, `arxiv_digest/mail_cli.py`, `arxiv_digest/subscriptions.py`, `tests/test_subscriptions.py`, `WORKLOG.md`.
 - Commands run:

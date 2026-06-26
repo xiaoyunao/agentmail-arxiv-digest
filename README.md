@@ -12,7 +12,7 @@ Send an email from the address where you want to receive the digest.
 To: dailyarxiv@agent.qq.com
 Subject: Subscribe to dailyarxiv
 
-dark matter; little red dot; yunao xiao; stellar streams; dwarf galaxies
+dark matter; little red dot; stellar streams; dwarf galaxies
 ```
 
 ## Email Format
@@ -30,7 +30,7 @@ Milky Way; stellar streams; dwarf galaxies; Gaia; DESI
 ```
 
 ```text
-dark matter; ultra-faint dwarfs; J-factor; Ting S. Li
+dark matter; ultra-faint dwarfs; J-factor; satellite galaxies
 ```
 
 ```text
@@ -64,7 +64,7 @@ arXiv astro-ph daily emails usually arrive Monday-Friday, Beijing time, between 
 
 `dailyarxiv` checks at:
 
-- 12:00 Beijing time for the main daily run
+- 12:00 Beijing time for subscription requests and the main daily arXiv run
 - 14:00 Beijing time for one fallback check if no daily email was processed at noon
 
 If arXiv does not send an astro-ph daily email that day, the service stops for that day.
