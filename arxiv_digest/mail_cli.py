@@ -17,6 +17,7 @@ from .subscriptions import (
     render_subscription_receipt,
     render_subscription_receipt_html,
     save_profile,
+    should_send_subscription_receipt,
     subscription_receipt_subject,
 )
 
@@ -82,7 +83,12 @@ def main(argv: list[str] | None = None) -> int:
             sender = full.get("from", {}).get("email", "")
             profile = parse_subscription_request(full.get("body", ""), sender)
             receipt_key = _subscription_receipt_key(profile)
-            send_receipt = send_log is not None and not send_log.already_sent(receipt_key)
+            profile_changed = should_send_subscription_receipt(profile, args.output_dir)
+            send_receipt = (
+                send_log is not None
+                and profile_changed
+                and not send_log.already_sent(receipt_key)
+            )
             path = save_profile(profile, args.output_dir)
             imported.append(path)
             if send_receipt:

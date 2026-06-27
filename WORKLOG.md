@@ -1,5 +1,32 @@
 # Worklog
 
+## 2026-06-27
+
+- Task: Run daily subscription monitor and fix duplicate receipt resend.
+- Files changed: `arxiv_digest/mail_cli.py`, `tests/test_mail_cli.py`, `WORKLOG.md`.
+- Commands run:
+  - `git status --short --branch`
+  - `sed -n '1,220p' PLAN.md`
+  - `sed -n '1,180p' WORKLOG.md`
+  - `agently-cli auth status`
+  - `agently-cli +me`
+  - `python -m arxiv_digest.mail_cli import-subscriptions --send-receipts`
+  - `python -m pytest tests/test_mail_cli.py tests/test_subscriptions.py tests/test_send_log.py`
+  - `python -m arxiv_digest.mail_cli import-subscriptions --send-receipts`
+  - `python -m pytest`
+  - `python -m py_compile arxiv_digest/*.py`
+- Key findings:
+  - Agent Mail auth is valid with `token_status: auto_refresh`; `+me` reports `dailyarxiv@agent.qq.com`.
+  - `.env` contains the required `DAILYARXIV_SMTP_*` keys for unattended SMTP receipts.
+  - Initial monitor run sent one duplicate subscription receipt for the unchanged `msg_awqinTnOc4JnPf5IdscY3E20lLo9NDRM8jkeU_Ch0PDxJg` profile.
+  - Root cause: `import-subscriptions --send-receipts` checked only the send-log dedupe key and skipped the existing `should_send_subscription_receipt()` profile-change guard.
+  - CLI now requires both profile new/changed status and an unsent dedupe key before sending a receipt.
+- Validation result: rerun kept subscription receipt count unchanged at `3 -> 3`; `pytest` passed 26 tests; `py_compile` passed.
+- Remaining issues:
+  - One extra duplicate receipt was already sent during the first 2026-06-27 monitor attempt.
+  - Need first non-forwarded arXiv daily received directly from arXiv to validate production timing.
+- Next step: Continue daily monitor runs; unchanged subscription scans should import profiles without sending receipts.
+
 ## 2026-06-26
 
 - Task: Rewrite public README with more formal subscriber-facing language.
