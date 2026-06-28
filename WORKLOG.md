@@ -1,5 +1,27 @@
 # Worklog
 
+## 2026-06-28
+
+- Task: Diagnose missed noon subscription monitor runs.
+- Files changed: `WORKLOG.md`; updated Codex automation schedules outside the repo.
+- Commands run:
+  - `automation_update view dailyarxiv-subscription-monitor`
+  - `sqlite3 ~/.codex/sqlite/codex-dev.db ... automations/automation_runs`
+  - `sqlite3 ~/.codex/logs_2.sqlite ...`
+  - `set_thread_archived 019f08f3-f0d2-7381-9ae7-6dfb6816477a`
+- Key findings:
+  - `dailyarxiv-subscription-monitor` did not run at 2026-06-27 12:00 CST; Codex logs had no records until the automation launched at 20:00 CST.
+  - 2026-06-28 12:00 CST had Codex model-refresh logs but no automation dispatch logs.
+  - `automations.next_run_at` showed timezone offset behavior: intended 12:00/14:00 jobs were stored as 20:00/22:00 CST.
+  - The 2026-06-27 subscription monitor run remained `PENDING_REVIEW`, which could block later runs.
+  - Updated internal cron DTSTART values so actual next runs are 2026-06-29 12:00 CST for subscription/noon processing and 14:00 CST for fallback.
+  - Archived the stale pending subscription monitor run.
+- Validation result: `automations.next_run_at` now resolves to 2026-06-29 12:00:18 CST, 12:00:38 CST, and 14:00:59 CST; stale run status is `ARCHIVED`.
+- Remaining issues:
+  - Need verify on 2026-06-29 that Codex actually dispatches the corrected 12:00/14:00 jobs.
+  - Local Mac still must be awake, logged in, networked, and running Codex for cron automation reliability.
+- Next step: Check tomorrow's 12:00 and 14:00 runs immediately after they are due.
+
 ## 2026-06-27
 
 - Task: Run daily subscription monitor and fix duplicate receipt resend.
