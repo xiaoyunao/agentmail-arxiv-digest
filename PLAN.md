@@ -24,7 +24,7 @@ Build a mailbox-driven daily arXiv digest service using `dailyarxiv@agent.qq.com
 
 - Re-check `agently-cli auth status` before mailbox operations because OAuth credentials can expire.
 - Codex cron automations can fail before command execution when the selected model is at capacity; check `automation_runs` and Codex logs after scheduled windows.
-- Confirm the arXiv astro-ph subscription is actually delivering directly to `dailyarxiv@agent.qq.com`; as of 2026-06-29 12:43 CST, the inbox still only had the 2026-06-26 forwarded astro-ph test message.
+- Configure a reliable astro-ph source for `dailyarxiv@agent.qq.com`: the 2026-06-26 Agent Mail subscription attempt was sent as HTML with a footer, while arXiv requires plain ASCII subscription mail, so direct delivery has not started.
 - Add persistent cache for triage decisions if needed after first manual runs.
 - Add persistent storage for parsed papers and generated summaries.
 - Decide whether daily cleanup should drop summary cache or keep it for deduplication.

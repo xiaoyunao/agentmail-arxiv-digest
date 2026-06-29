@@ -2,6 +2,28 @@
 
 ## 2026-06-29
 
+- Task: Compare unit-mail arXiv delivery with `dailyarxiv@agent.qq.com` mailbox.
+- Files changed: `WORKLOG.md`, `PLAN.md`.
+- Commands run:
+  - `agently-cli message +list --dir inbox --limit 20`
+  - `agently-cli message +list --dir spam --limit 20`
+  - `agently-cli message +list --dir trash --limit 20`
+  - `agently-cli message +search --q "astro-ph daily" --search-in SEARCH_IN_ALL --dir inbox --limit 20`
+  - `agently-cli message +search --q "arXiv" --search-in SEARCH_IN_ALL --dir inbox --limit 20`
+  - `agently-cli message +search --q "no-reply@arxiv.org" --search-in SEARCH_IN_ALL --dir inbox --limit 20`
+  - `agently-cli message +list --dir sent --limit 20`
+  - `agently-cli message +read --id msg_IWyLF9FBAbak9nyOGwdO_7Jjl19qMOh6k44dMk8zj1HHCw`
+- Key findings:
+  - The user's institute mailbox received `astro-ph daily 95 new + 16 crosses received 2451` at 2026-06-29 09:36 CST, so arXiv did send today's digest.
+  - `dailyarxiv@agent.qq.com` inbox still has only three 2026-06-26 messages; spam and trash are empty.
+  - Searching `dailyarxiv@agent.qq.com` for `astro-ph daily`, `arXiv`, and `no-reply@arxiv.org` found no 2026-06-29 direct arXiv message.
+  - The only sent subscription attempt from `dailyarxiv@agent.qq.com` to `astro-ph@arxiv.org` had subject/body `subscribe dailyarxiv` but was stored as HTML with the Agent Mail footer.
+  - arXiv documentation says subscription mail must be plain ASCII text; rich-text email is ignored, so the Agent Mail subscription attempt likely never took effect.
+- Validation result: Direct Agent Mail delivery is absent; issue is arXiv subscription/delivery to `dailyarxiv@agent.qq.com`, not today's arXiv schedule.
+- Remaining issues:
+  - Need a plain-text subscription path for `dailyarxiv@agent.qq.com` or a reliable forwarding rule from a mailbox that already receives astro-ph.
+- Next step: Prefer forwarding today's arXiv daily from the institute mailbox to `dailyarxiv@agent.qq.com` for immediate processing, then configure a permanent forwarding rule or another plain-text-capable mailbox path.
+
 - Task: Diagnose missed daily processing and add arXiv daily date guard.
 - Files changed: `arxiv_digest/mail_cli.py`, `tests/test_mail_cli.py`, `docs/OPERATIONS.md`, `WORKLOG.md`; updated Codex automation prompts outside the repo.
 - Commands run:
