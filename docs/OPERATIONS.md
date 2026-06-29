@@ -2,11 +2,14 @@
 
 ## Mailboxes
 
-- Inbound mailbox: `dailyarxiv@agent.qq.com`
-- arXiv subscription source: `astro-ph@arxiv.org`
+- Subscriber request mailbox: `dailyarxiv@agent.qq.com`
+- arXiv daily source mailbox: `dailyarxiv.digest@gmail.com`
+- arXiv subscription address: `astro-ph@arxiv.org`
 - Subscriber request subject: `Subscribe to dailyarxiv`
 
-Agent Mail is used for reading inbound messages. Automatic outbound mail should use SMTP because Agent Mail write operations require an explicit confirmation token.
+Agent Mail is used for reading subscriber request messages. Gmail IMAP is used
+for reading the official arXiv daily email. Automatic outbound mail uses SMTP
+because Agent Mail write operations require an explicit confirmation token.
 
 ## Automatic Send Backend
 
@@ -29,6 +32,16 @@ Common optional variables:
 - `DAILYARXIV_SMTP_SECURITY`: `starttls`, `ssl`, or `none`
 - `DAILYARXIV_SMTP_FROM_EMAIL`
 - `DAILYARXIV_SMTP_FROM_NAME`
+
+The same Gmail app password can be used for inbound arXiv mail through IMAP.
+If these variables are omitted, IMAP defaults to Gmail and reuses the SMTP
+username/password:
+
+- `DAILYARXIV_IMAP_HOST`: defaults to `imap.gmail.com`
+- `DAILYARXIV_IMAP_PORT`: defaults to `993`
+- `DAILYARXIV_IMAP_USERNAME`: defaults to `DAILYARXIV_SMTP_USERNAME`
+- `DAILYARXIV_IMAP_PASSWORD`: defaults to `DAILYARXIV_SMTP_PASSWORD`
+- `DAILYARXIV_IMAP_MAILBOX`: defaults to `INBOX`
 
 ## Subscriber Import
 
@@ -58,16 +71,31 @@ arXiv astro-ph daily usually arrives Monday-Friday Beijing time between 09:00 an
 
 ## Manual Commands
 
-Fetch the latest daily email:
+Fetch the latest daily email from Gmail IMAP:
 
 ```bash
-python -m arxiv_digest.mail_cli latest-arxiv \
+python -m arxiv_digest.mail_cli latest-arxiv-gmail \
   --local-date "$(date +%F)" \
   --output data/astro-ph-$(date +%F).txt
 ```
 
 The `--local-date` guard prevents an older arXiv daily email from being saved
 or processed as today's run.
+
+Subscribe the Gmail source mailbox to arXiv `astro-ph` with a plain-text email:
+
+```bash
+printf '' > /tmp/dailyarxiv-empty.txt
+python -m arxiv_digest.mail_cli send-smtp \
+  --to astro-ph@arxiv.org \
+  --subject "subscribe dailyarxiv" \
+  --body-file /tmp/dailyarxiv-empty.txt \
+  --message-type arxiv_subscription \
+  --dedupe-key "arxiv_subscription:astro-ph:dailyarxiv.digest@gmail.com"
+```
+
+arXiv requires plain ASCII text subscription mail. Do not use Agent Mail for
+this subscription message because Agent Mail sends HTML plus a footer.
 
 Export tasks for Codex review:
 

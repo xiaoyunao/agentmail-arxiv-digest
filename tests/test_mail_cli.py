@@ -1,4 +1,5 @@
 from arxiv_digest import mail_cli
+from arxiv_digest.imap_mail import ImapMessage
 from arxiv_digest.subscriptions import SUBSCRIBE_SUBJECT
 
 
@@ -46,6 +47,25 @@ def test_latest_arxiv_exits_when_local_date_missing(tmp_path, monkeypatch):
     else:
         raise AssertionError("expected SystemExit")
     assert not output.exists()
+
+
+def test_latest_arxiv_gmail_writes_imap_body(tmp_path, monkeypatch):
+    monkeypatch.setattr(mail_cli, "load_env_file", lambda: None)
+    monkeypatch.setattr(
+        mail_cli,
+        "latest_arxiv_from_imap",
+        lambda query, local_date, limit: ImapMessage(
+            message_id="gmail_msg",
+            subject="astro-ph daily",
+            date="Mon, 29 Jun 2026 01:36:33 +0000",
+            body="daily body",
+        ),
+    )
+
+    output = tmp_path / "gmail-astro-ph.txt"
+    assert mail_cli.main(["latest-arxiv-gmail", "--output", str(output), "--local-date", "2026-06-29"]) == 0
+
+    assert output.read_text(encoding="utf-8") == "daily body"
 
 
 def test_import_subscriptions_does_not_resend_unchanged_receipts(tmp_path, monkeypatch):

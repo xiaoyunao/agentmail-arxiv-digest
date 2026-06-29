@@ -19,12 +19,13 @@ Build a mailbox-driven daily arXiv digest service using `dailyarxiv@agent.qq.com
 - Send daily digests automatically through SMTP.
 - Remove old runtime files after daily sends.
 - Keep Agent Mail send as a manual fallback only.
+- Use Gmail IMAP as the arXiv astro-ph daily source.
 
 ## Outstanding Issues
 
 - Re-check `agently-cli auth status` before mailbox operations because OAuth credentials can expire.
 - Codex cron automations can fail before command execution when the selected model is at capacity; check `automation_runs` and Codex logs after scheduled windows.
-- Configure a reliable astro-ph source for `dailyarxiv@agent.qq.com`: the 2026-06-26 Agent Mail subscription attempt was sent as HTML with a footer, while arXiv requires plain ASCII subscription mail, so direct delivery has not started.
+- Confirm the next `astro-ph daily` is delivered to Gmail and parsed by `latest-arxiv-gmail`.
 - Add persistent cache for triage decisions if needed after first manual runs.
 - Add persistent storage for parsed papers and generated summaries.
 - Decide whether daily cleanup should drop summary cache or keep it for deduplication.
@@ -48,11 +49,12 @@ Build a mailbox-driven daily arXiv digest service using `dailyarxiv@agent.qq.com
 - Digest emails can be sent without Agent Mail confirmation through `send-smtp`.
 - Cleanup command removes old runtime files and only drops cache with an explicit flag.
 - Gmail SMTP smoke test succeeds for automatic outgoing mail.
+- Gmail IMAP can fetch today's arXiv daily with `latest-arxiv-gmail --local-date "$(date +%F)"`.
 - Outbound SMTP sends are recorded in `.arxiv_digest_send_log.sqlite3` and duplicate sends are skipped by dedupe key.
 
 ## Next Recommended Steps
 
-- Subscribe `dailyarxiv@agent.qq.com` to arXiv `astro-ph` daily emails.
+- Use `latest-arxiv-gmail` on the next received astro-ph daily email.
 - Use the current parser/CLI on the first received daily email.
 - Use Codex task export/import on one real daily email and inspect false positives/false negatives before enabling sends.
 - Run one full end-to-end daily digest on a real astro-ph daily email.

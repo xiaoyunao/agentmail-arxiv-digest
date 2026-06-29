@@ -4,9 +4,9 @@
 
 Build a mailbox-driven daily arXiv digest service:
 
-1. Subscribe `dailyarxiv@agent.qq.com` to arXiv daily `astro-ph`.
+1. Subscribe `dailyarxiv.digest@gmail.com` to arXiv daily `astro-ph`.
 2. Parse the fixed-format daily arXiv email into structured paper records.
-3. Maintain subscriber profiles from fixed-format request emails.
+3. Maintain subscriber profiles from fixed-format request emails sent to `dailyarxiv@agent.qq.com`.
 4. Broadly recall potentially relevant papers using categories, authors, keywords, and user interests.
 5. Use Codex to decide whether each recalled paper is `skip`, `short`, or `full_read`.
 6. Use Codex to read the full text/PDF and generate personalized Chinese digests only for triage-approved papers.
@@ -26,7 +26,7 @@ ChatGPT Pro does not include general OpenAI API usage. Because the current const
 
 ```text
 arXiv astro-ph daily mail
-  -> agently-cli message +list/+read
+  -> Gmail IMAP
   -> arxiv_digest.parser.parse_daily_email
   -> normalized paper table
   -> broad deterministic recall with profile signals
@@ -124,7 +124,7 @@ The API path remains optional, but it is not required for the Codex-backed workf
 1. Parser and local profile matching.
 2. Manual CLI run on pasted arXiv email.
 3. Codex task export/import contract.
-4. Fetch latest arXiv email from `dailyarxiv@agent.qq.com`.
+4. Fetch latest arXiv email from Gmail IMAP.
 5. Codex summary import/cache.
 6. Manual send to one test recipient.
 7. Subscriber request parser.

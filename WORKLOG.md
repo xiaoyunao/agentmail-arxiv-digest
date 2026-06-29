@@ -2,6 +2,32 @@
 
 ## 2026-06-29
 
+- Task: Switch arXiv daily source to Gmail IMAP and send plain-text arXiv subscription.
+- Files changed: `arxiv_digest/imap_mail.py`, `arxiv_digest/mail_cli.py`, `tests/test_imap_mail.py`, `tests/test_mail_cli.py`, `.env.example`, `README.md`, `docs/OPERATIONS.md`, `docs/ARCHITECTURE.md`, `PLAN.md`, `WORKLOG.md`; updated Codex automation prompts outside the repo.
+- Commands run:
+  - `curl -L https://info.arxiv.org/help/subscribe.html | rg ...`
+  - `python -m arxiv_digest.mail_cli latest-arxiv-gmail --query "astro-ph daily" --local-date "$(date +%F)" --output data/gmail-astro-ph-$(date +%F).txt --limit 20`
+  - `python -m arxiv_digest.mail_cli send-smtp --to astro-ph@arxiv.org --subject "subscribe dailyarxiv" --body-file /tmp/dailyarxiv-arxiv-subscribe-empty.txt --message-type arxiv_subscription --dedupe-key "arxiv_subscription:astro-ph:dailyarxiv.digest@gmail.com"`
+  - Gmail IMAP header/body check for latest `no-reply@arxiv.org` response.
+  - `python -m pytest tests/test_imap_mail.py tests/test_mail_cli.py`
+  - `python -m pytest`
+  - `python -m py_compile arxiv_digest/*.py`
+- Key findings:
+  - arXiv's official subscription page requires daily listing subscription mail to be plain ASCII text and says richtext messages are ignored.
+  - Added Gmail IMAP as the arXiv daily source via `latest-arxiv-gmail`.
+  - Gmail IMAP config defaults to `imap.gmail.com:993` and reuses `DAILYARXIV_SMTP_USERNAME`/`DAILYARXIV_SMTP_PASSWORD` unless explicit IMAP variables are set.
+  - Live Gmail IMAP login succeeded; no 2026-06-29 `astro-ph daily` message was present, as expected before subscription takes effect.
+  - Sent a plain-text SMTP subscription email from the Gmail account to `astro-ph@arxiv.org` with subject `subscribe dailyarxiv`.
+  - Send log recorded `arxiv_subscription:astro-ph:dailyarxiv.digest@gmail.com` at 2026-06-29 13:01 CST.
+  - arXiv replied to Gmail with `Your email address has been added to the title/abstract distribution list.`
+  - Noon and 14:00 daily processing automations now fetch arXiv daily mail from Gmail IMAP, while Agent Mail remains the subscriber request inbox.
+  - Moved the 14:00 fallback next run to 2026-06-30 so today's arXiv daily is not processed.
+- Validation result: `pytest` passed 33 tests; `py_compile` passed; Gmail IMAP command failed only with expected no-message result for 2026-06-29.
+- Remaining issues:
+  - Need confirm the next astro-ph daily is delivered to Gmail and parsed by `latest-arxiv-gmail`.
+  - Codex automation can still fail before command execution if the selected model is at capacity.
+- Next step: Check Gmail around the next arXiv daily window and run `latest-arxiv-gmail --local-date "$(date +%F)"` after delivery.
+
 - Task: Compare unit-mail arXiv delivery with `dailyarxiv@agent.qq.com` mailbox.
 - Files changed: `WORKLOG.md`, `PLAN.md`.
 - Commands run:

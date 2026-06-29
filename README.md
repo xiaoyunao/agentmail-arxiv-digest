@@ -76,7 +76,8 @@ This repository is public. The service is currently in an early operational stag
 
 The production workflow is built around:
 
-- `dailyarxiv@agent.qq.com` for inbound subscription and arXiv daily mail
+- `dailyarxiv@agent.qq.com` for inbound subscriber requests
+- Gmail IMAP for the official arXiv astro-ph daily email source
 - Codex for semantic triage and full-text summaries
 - SMTP for automatic outgoing receipts and digests
 

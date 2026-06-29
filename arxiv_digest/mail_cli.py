@@ -8,6 +8,7 @@ from zoneinfo import ZoneInfo
 
 from .cleanup import cleanup_runtime_files
 from .env import load_env_file
+from .imap_mail import latest_arxiv_from_imap
 from .mail import prepare_send, read_message, search_messages
 from .profiles import InterestProfile
 from .send_log import DEFAULT_SEND_LOG_PATH, SendLog, make_dedupe_key
@@ -35,6 +36,15 @@ def build_parser() -> argparse.ArgumentParser:
     latest.add_argument(
         "--local-date",
         help="Only accept a message whose created_at matches this Asia/Shanghai date, e.g. 2026-06-29.",
+    )
+
+    latest_gmail = sub.add_parser("latest-arxiv-gmail", help="Fetch latest arXiv daily email body from Gmail IMAP.")
+    latest_gmail.add_argument("--query", default="astro-ph daily", help="Search text for arXiv daily email.")
+    latest_gmail.add_argument("--output", required=True, help="Output text path.")
+    latest_gmail.add_argument("--limit", type=int, default=20)
+    latest_gmail.add_argument(
+        "--local-date",
+        help="Only accept a message whose Date header matches this Asia/Shanghai date, e.g. 2026-06-29.",
     )
 
     subs = sub.add_parser("import-subscriptions", help="Import fixed-format subscription request emails.")
@@ -75,6 +85,12 @@ def main(argv: list[str] | None = None) -> int:
         body = read_message(message["message_id"])["data"]["body"]
         Path(args.output).write_text(body, encoding="utf-8")
         print(f"wrote {args.output} from {message['message_id']}")
+        return 0
+
+    if args.command == "latest-arxiv-gmail":
+        message = latest_arxiv_from_imap(query=args.query, local_date=args.local_date, limit=args.limit)
+        Path(args.output).write_text(message.body, encoding="utf-8")
+        print(f"wrote {args.output} from Gmail IMAP message {message.message_id}")
         return 0
 
     if args.command == "import-subscriptions":
