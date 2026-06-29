@@ -23,6 +23,8 @@ Build a mailbox-driven daily arXiv digest service using `dailyarxiv@agent.qq.com
 ## Outstanding Issues
 
 - Re-check `agently-cli auth status` before mailbox operations because OAuth credentials can expire.
+- Codex cron automations can fail before command execution when the selected model is at capacity; check `automation_runs` and Codex logs after scheduled windows.
+- Confirm the arXiv astro-ph subscription is actually delivering directly to `dailyarxiv@agent.qq.com`; as of 2026-06-29 12:43 CST, the inbox still only had the 2026-06-26 forwarded astro-ph test message.
 - Add persistent cache for triage decisions if needed after first manual runs.
 - Add persistent storage for parsed papers and generated summaries.
 - Decide whether daily cleanup should drop summary cache or keep it for deduplication.
@@ -36,6 +38,7 @@ Build a mailbox-driven daily arXiv digest service using `dailyarxiv@agent.qq.com
 - Parser tests pass on wrapped arXiv daily entries.
 - Parser accepts forwarded rich-text arXiv daily messages with `<br>` and `&nbsp;` markup.
 - CLI can parse a saved daily email and produce profile-filtered text and HTML digests.
+- `latest-arxiv --local-date "$(date +%F)"` refuses older arXiv daily messages instead of saving them as today's run.
 - CLI can run an AI-triage-shaped local flow without requiring an API key.
 - CLI can export Codex review tasks and import Codex-produced summaries.
 - Subscription import accepts `Subscribe to dailyarxiv` emails and ignores other subjects.

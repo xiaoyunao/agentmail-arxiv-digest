@@ -61,8 +61,13 @@ arXiv astro-ph daily usually arrives Monday-Friday Beijing time between 09:00 an
 Fetch the latest daily email:
 
 ```bash
-python -m arxiv_digest.mail_cli latest-arxiv --output data/latest-astro-ph.txt
+python -m arxiv_digest.mail_cli latest-arxiv \
+  --local-date "$(date +%F)" \
+  --output data/astro-ph-$(date +%F).txt
 ```
+
+The `--local-date` guard prevents an older arXiv daily email from being saved
+or processed as today's run.
 
 Export tasks for Codex review:
 

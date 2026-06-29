@@ -1,5 +1,52 @@
 # Worklog
 
+## 2026-06-29
+
+- Task: Diagnose missed daily processing and add arXiv daily date guard.
+- Files changed: `arxiv_digest/mail_cli.py`, `tests/test_mail_cli.py`, `docs/OPERATIONS.md`, `WORKLOG.md`; updated Codex automation prompts outside the repo.
+- Commands run:
+  - `sqlite3 ~/.codex/sqlite/codex-dev.db ... automations/automation_runs`
+  - `codex_app.read_thread 019f1189-a1de-73e2-8269-e18fe0c9917a`
+  - `sqlite3 ~/.codex/logs_2.sqlite ... thread_id='019f1189-a1de-73e2-8269-e18fe0c9917a'`
+  - `agently-cli auth status`
+  - `agently-cli +me`
+  - `agently-cli message +list --dir inbox --limit 15`
+  - `python -m arxiv_digest.mail_cli latest-arxiv --query "astro-ph daily" --local-date "$(date +%F)" --output data/astro-ph-$(date +%F).txt --limit 20`
+  - `python -m pytest tests/test_mail_cli.py`
+  - `python -m py_compile arxiv_digest/mail_cli.py`
+- Key findings:
+  - `dailyarxiv-subscription-monitor` ran at 2026-06-29 12:00 CST and succeeded without duplicate receipts.
+  - `dailyarxiv-noon-processing` launched at 2026-06-29 12:01 CST but ended with a Codex system error before running commands: `Selected model is at capacity. Please try a different model.`
+  - Agent Mail auth is valid and SMTP env vars are present, so today's noon failure was not caused by mailbox auth or SMTP configuration.
+  - Inbox listing showed no new 2026-06-29 arXiv astro-ph daily email; the latest astro-ph message was still the 2026-06-26 forwarded test email.
+  - `latest-arxiv` previously selected the latest matching message regardless of date; it now accepts `--local-date` and refuses older mail.
+  - Noon and 14:00 automation prompts now require `--local-date "$(date +%F)"` before processing.
+- Validation result: guarded live mailbox check exited with `no messages found for query: astro-ph daily on local date 2026-06-29`; `tests/test_mail_cli.py` passed; `py_compile` passed.
+- Remaining issues:
+  - The 14:00 fallback may still fail if Codex model capacity is unavailable.
+  - Need confirm why arXiv has not delivered directly to `dailyarxiv@agent.qq.com` after the subscription setup.
+- Next step: Check the 14:00 fallback run, and if no mail is present by then, verify the arXiv subscription status or confirmation path.
+
+- Task: Run daily subscription monitor.
+- Files changed: `WORKLOG.md`; runtime subscriber file `subscribers/xiaoya_nao.cas.cn.json` refreshed.
+- Commands run:
+  - `git status --short --branch`
+  - `git fetch --all --prune`
+  - `sed -n '1,220p' PLAN.md`
+  - `sed -n '1,160p' WORKLOG.md`
+  - `agently-cli auth status`
+  - `agently-cli +me`
+  - `python -m arxiv_digest.mail_cli import-subscriptions --send-receipts`
+- Key findings:
+  - Agent Mail auth is valid with `token_status: auto_refresh`; `+me` reports `dailyarxiv@agent.qq.com`.
+  - Required SMTP env vars are present; optional `DAILYARXIV_SMTP_FROM_EMAIL` falls back to SMTP username.
+  - Import found the existing subscriber profile and refreshed the ignored runtime JSON.
+  - Send log was unchanged; no new or duplicate subscription receipt was sent.
+- Validation result: monitor command exited successfully and receipt dedupe held.
+- Remaining issues:
+  - Need continue monitoring first direct arXiv daily production run.
+- Next step: Continue scheduled daily subscription monitor runs.
+
 ## 2026-06-28
 
 - Task: Diagnose missed noon subscription monitor runs.
