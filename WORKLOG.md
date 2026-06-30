@@ -1,5 +1,65 @@
 # Worklog
 
+## 2026-06-30
+
+- Task: Run dailyarxiv noon processing on the first direct Gmail astro-ph daily.
+- Files changed: `WORKLOG.md`, `PLAN.md`; ignored runtime files under `data/` and `out/`; send/cache sqlite files updated.
+- Commands run:
+  - `git status --short --branch`
+  - `git branch --show-current`
+  - `git fetch --all --prune`
+  - `git log --oneline --decorate --graph -n 15 --all`
+  - `sed -n '1,260p' WORKLOG.md`
+  - `sed -n '1,220p' PLAN.md`
+  - `python -m arxiv_digest.mail_cli latest-arxiv-gmail --query "astro-ph daily" --local-date "$(date +%F)" --output "data/astro-ph-$(date +%F).txt" --limit 20`
+  - `python -m arxiv_digest.mail_cli import-subscriptions --send-receipts`
+  - `python -m arxiv_digest.cli --mail-file data/astro-ph-2026-06-30.txt --profile subscribers/xiaoya_nao.cas.cn.json --triage codex --export-codex-tasks out/codex-tasks-2026-06-30-xiaoya_nao.cas.cn.json --output out/recalled-2026-06-30-xiaoya_nao.cas.cn.txt`
+  - `curl -L --fail --retry 2 ... https://arxiv.org/pdf/<id>` for six included papers.
+  - `python`/`pypdf` extraction for downloaded PDFs under `out/fulltext-2026-06-30/`.
+  - `python -m json.tool out/codex-summaries-2026-06-30-xiaoya_nao.cas.cn.json`
+  - `python -m arxiv_digest.cli ... --import-codex-summaries ... --output out/digest-2026-06-30-xiaoya_nao.cas.cn.txt`
+  - `python -m arxiv_digest.cli ... --import-codex-summaries ... --format html --output out/digest-2026-06-30-xiaoya_nao.cas.cn.html`
+  - `python -m arxiv_digest.mail_cli send-smtp --to xiaoya@nao.cas.cn --subject "dailyarxiv astro-ph digest 2026-06-30" --body-file out/digest-2026-06-30-xiaoya_nao.cas.cn.txt --html-body-file out/digest-2026-06-30-xiaoya_nao.cas.cn.html --message-type daily_digest --dedupe-key "daily_digest:2026-06-30:xiaoya@nao.cas.cn"`
+  - `python -m arxiv_digest.mail_cli cleanup --keep-days 3 --path data --path out`
+- Key findings:
+  - Gmail IMAP found today's direct arXiv message `<8649.1782789656.2201@arXiv.org>` and saved `data/astro-ph-2026-06-30.txt`.
+  - Subscription import completed without new receipt output; existing subscriber `xiaoya@nao.cas.cn` remains the only profile.
+  - Broad recall exported 50 candidate papers; semantic triage included six papers: `2606.29918`, `2606.29149`, `2606.30078`, `2606.30280`, `2606.29508`, `2606.28504`.
+  - Downloaded and read full-text PDFs for all six included papers before writing Chinese summaries.
+  - `pdftotext` was unavailable locally; used installed `pypdf` for PDF text extraction.
+  - Rendered plain-text and HTML digests with six included papers.
+  - SMTP sent the production digest to `xiaoya@nao.cas.cn` using dedupe key `daily_digest:2026-06-30:xiaoya@nao.cas.cn`.
+  - Cleanup removed only old 2026-06-26 test runtime files; today's raw mail, task export, summaries, full texts, and digests were preserved.
+- Validation result: JSON validation passed; text and HTML digest rendering passed; SMTP send succeeded; cleanup preserved today's files.
+- Remaining issues:
+  - Need inspect the received production HTML digest for formatting and length in the mail client.
+  - Daily digest is long at six full-text summaries; consider tightening max papers or summary verbosity after user feedback.
+- Next step: Let the 14:00 fallback skip naturally if dedupe sees today's digest, or leave it as a no-op after this successful noon run.
+
+- Task: Run daily subscription monitor.
+- Files changed: `WORKLOG.md`; ignored runtime subscriber file `subscribers/xiaoya_nao.cas.cn.json` refreshed.
+- Commands run:
+  - `git status --short --branch`
+  - `git branch --show-current`
+  - `git fetch --all --prune`
+  - `git log --oneline --decorate --graph -n 15 --all`
+  - `sed -n '1,220p' PLAN.md`
+  - `sed -n '1,120p' WORKLOG.md`
+  - `agently-cli auth status`
+  - `agently-cli +me`
+  - `python -m arxiv_digest.mail_cli import-subscriptions --send-receipts`
+  - `sqlite3 .arxiv_digest_send_log.sqlite3 ".schema sent_messages"`
+  - `sqlite3 .arxiv_digest_send_log.sqlite3 "select * from sent_messages order by rowid desc limit 10;"`
+- Key findings:
+  - Agent Mail auth is valid with `token_status: valid`; `+me` reports `dailyarxiv@agent.qq.com`.
+  - Branch `master` is aligned with `origin/master` after fetch.
+  - Import found existing subscriber profile `subscribers/xiaoya_nao.cas.cn.json`.
+  - SMTP send log was unchanged; latest subscription receipt remains 2026-06-27, so no duplicate receipt was sent today.
+- Validation result: monitor command exited successfully and receipt dedupe held.
+- Remaining issues:
+  - Need continue monitoring the first direct arXiv daily production run.
+- Next step: Continue scheduled daily subscription monitor runs.
+
 ## 2026-06-29
 
 - Task: Switch arXiv daily source to Gmail IMAP and send plain-text arXiv subscription.

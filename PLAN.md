@@ -25,7 +25,7 @@ Build a mailbox-driven daily arXiv digest service using `dailyarxiv@agent.qq.com
 
 - Re-check `agently-cli auth status` before mailbox operations because OAuth credentials can expire.
 - Codex cron automations can fail before command execution when the selected model is at capacity; check `automation_runs` and Codex logs after scheduled windows.
-- Confirm the next `astro-ph daily` is delivered to Gmail and parsed by `latest-arxiv-gmail`.
+- Inspect the received 2026-06-30 production HTML digest in the mail client for formatting, length, and usefulness.
 - Add persistent cache for triage decisions if needed after first manual runs.
 - Add persistent storage for parsed papers and generated summaries.
 - Decide whether daily cleanup should drop summary cache or keep it for deduplication.
@@ -54,8 +54,6 @@ Build a mailbox-driven daily arXiv digest service using `dailyarxiv@agent.qq.com
 
 ## Next Recommended Steps
 
-- Use `latest-arxiv-gmail` on the next received astro-ph daily email.
-- Use the current parser/CLI on the first received daily email.
-- Use Codex task export/import on one real daily email and inspect false positives/false negatives before enabling sends.
-- Run one full end-to-end daily digest on a real astro-ph daily email.
+- Continue daily Gmail IMAP processing with the guarded `--local-date "$(date +%F)"` command.
+- Review the 2026-06-30 production digest with the subscriber and tune max paper count or summary verbosity if it is too long.
 - Add parsed-paper/run-state persistence if daily operational logs show it is needed.
