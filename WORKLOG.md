@@ -2,6 +2,29 @@
 
 ## 2026-07-01
 
+- Task: Run dailyarxiv 14:00 fallback check.
+- Files changed: `WORKLOG.md`; automation memory outside repo.
+- Commands run:
+  - `git status --short --branch`
+  - `git branch --show-current`
+  - `git fetch --all --prune`
+  - `git log --oneline --decorate --graph -n 15 --all`
+  - `sed -n '1,220p' WORKLOG.md`
+  - `sed -n '1,220p' PLAN.md`
+  - `find data out -maxdepth 2 -type f | sort | tail -n 80`
+  - `find . -maxdepth 3 -type f \( -iname '*send*log*' -o -iname '*mail*log*' -o -iname '*dedupe*' \) | sort`
+  - `sqlite3 .arxiv_digest_send_log.sqlite3 ".schema sent_messages"`
+  - `sqlite3 .arxiv_digest_send_log.sqlite3 "select message_type, dedupe_key, recipient, subject, sent_at_utc from sent_messages where dedupe_key like 'daily_digest:2026-07-01:%' order by sent_at_utc desc;"`
+- Key findings:
+  - Noon processing already saved `data/astro-ph-2026-07-01.txt`.
+  - Plain-text and HTML digests already exist under `out/` for `xiaoya@nao.cas.cn`.
+  - Full-text PDFs/text extracts for all eight included papers are present under `out/fulltext-2026-07-01/`.
+  - SMTP send log contains `daily_digest:2026-07-01:xiaoya@nao.cas.cn` sent at `2026-07-01T04:08:08.904822+00:00`.
+- Validation result: Same-day raw mail, rendered outputs, full-text artifacts, and sent digest dedupe key were verified; fallback skipped Gmail fetch and did not send mail.
+- Remaining issues:
+  - Need inspect the received 2026-07-01 production HTML digest in the mail client for formatting, length, and usefulness.
+- Next step: Continue normal daily schedule; no 14:00 fallback action needed for 2026-07-01.
+
 - Task: Run dailyarxiv noon processing for today's Gmail astro-ph daily.
 - Files changed: `WORKLOG.md`, `PLAN.md`; ignored runtime files under `data/` and `out/`; send/cache sqlite files updated.
 - Commands run:
