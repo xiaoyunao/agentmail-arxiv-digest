@@ -1,5 +1,30 @@
 # Worklog
 
+## 2026-07-02
+
+- Task: Run daily subscription monitor.
+- Files changed: `WORKLOG.md`; ignored runtime subscriber file `subscribers/xiaoya_nao.cas.cn.json` refreshed.
+- Commands run:
+  - `git status --short --branch`
+  - `git branch --show-current`
+  - `git fetch --all --prune`
+  - `git log --oneline --decorate --graph -n 15 --all`
+  - `sed -n '1,220p' PLAN.md`
+  - `sed -n '1,180p' WORKLOG.md`
+  - `agently-cli auth status`
+  - `agently-cli +me`
+  - `python -m arxiv_digest.mail_cli import-subscriptions --send-receipts`
+  - `sqlite3 .arxiv_digest_send_log.sqlite3 ...`
+- Key findings:
+  - Agent Mail auth is usable; `+me` reports `dailyarxiv@agent.qq.com`.
+  - `.env` contains the SMTP config keys used by `mail_cli` after `load_env_file()`.
+  - Import found existing subscriber profile `subscribers/xiaoya_nao.cas.cn.json`.
+  - SMTP send log still has 3 subscription receipts; newest remains `2026-06-27T12:01:25.547598+00:00`, so no duplicate receipt was sent.
+- Validation result: monitor command exited successfully and receipt dedupe held.
+- Remaining issues:
+  - Need continue daily subscription monitor runs.
+- Next step: Continue scheduled daily subscription monitor runs.
+
 ## 2026-07-01
 
 - Task: Run dailyarxiv 14:00 fallback check.
