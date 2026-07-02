@@ -2,6 +2,40 @@
 
 ## 2026-07-02
 
+- Task: Run dailyarxiv noon processing for today's Gmail astro-ph daily.
+- Files changed: `WORKLOG.md`, `PLAN.md`; ignored runtime files under `data/` and `out/`; send/cache sqlite files updated.
+- Commands run:
+  - `git status --short --branch`
+  - `git branch --show-current`
+  - `git fetch --all --prune`
+  - `git log --oneline --decorate --graph -n 15 --all`
+  - `sed -n '1,260p' WORKLOG.md`
+  - `sed -n '1,260p' PLAN.md`
+  - `python -m arxiv_digest.mail_cli latest-arxiv-gmail --query "astro-ph daily" --local-date "$(date +%F)" --output "data/astro-ph-$(date +%F).txt" --limit 20`
+  - `python -m arxiv_digest.mail_cli import-subscriptions --send-receipts`
+  - `python -m arxiv_digest.cli --mail-file data/astro-ph-2026-07-02.txt --profile subscribers/xiaoya_nao.cas.cn.json --triage codex --export-codex-tasks out/codex-tasks-2026-07-02-xiaoya_nao.cas.cn.json --output out/recalled-2026-07-02-xiaoya_nao.cas.cn.txt`
+  - `curl -L --fail --retry 2 ... https://arxiv.org/pdf/<id>` for eight included papers.
+  - `python`/`pypdf` extraction for downloaded PDFs under `out/fulltext-2026-07-02/`.
+  - `python -m json.tool out/codex-summaries-2026-07-02-xiaoya_nao.cas.cn.json`
+  - `python -m arxiv_digest.cli ... --triage codex --import-codex-summaries ... --output out/digest-2026-07-02-xiaoya_nao.cas.cn.txt`
+  - `python -m arxiv_digest.cli ... --triage codex --import-codex-summaries ... --format html --output out/digest-2026-07-02-xiaoya_nao.cas.cn.html`
+  - `python -m arxiv_digest.mail_cli send-smtp --to xiaoya@nao.cas.cn --subject "dailyarxiv astro-ph digest 2026-07-02" --body-file out/digest-2026-07-02-xiaoya_nao.cas.cn.txt --html-body-file out/digest-2026-07-02-xiaoya_nao.cas.cn.html --message-type daily_digest --dedupe-key "daily_digest:2026-07-02:xiaoya@nao.cas.cn"`
+  - `python -m arxiv_digest.mail_cli cleanup --keep-days 3 --path data --path out`
+  - `sqlite3 .arxiv_digest_send_log.sqlite3 ...`
+- Key findings:
+  - Gmail IMAP found today's direct arXiv message `<243266.1782956749.2201@arXiv.org>` and saved `data/astro-ph-2026-07-02.txt`.
+  - Subscription import completed without new receipt output; existing subscriber `xiaoya@nao.cas.cn` remains the only profile.
+  - Broad recall exported 50 candidate papers; semantic triage included eight papers: `2607.00098`, `2607.00764`, `2607.00291`, `2607.01013`, `2607.00077`, `2607.00264`, `2607.00976`, `2607.00217`.
+  - Downloaded and read full-text PDFs for all eight included papers before writing Chinese summaries.
+  - Rendered plain-text and HTML digests with eight included papers; initial render attempt failed until rerun with required `--triage codex`.
+  - SMTP sent the production digest to `xiaoya@nao.cas.cn` using dedupe key `daily_digest:2026-07-02:xiaoya@nao.cas.cn` at `2026-07-02T04:07:13.301414+00:00`.
+  - Cleanup removed `0` old files; today's raw mail, task export, summaries, full texts, and digests were preserved.
+- Validation result: JSON validation passed; text and HTML digest rendering passed after adding `--triage codex`; SMTP send succeeded; send-log dedupe entry verified; cleanup preserved today's files.
+- Remaining issues:
+  - Need inspect the received 2026-07-02 production HTML digest in the mail client for formatting, length, and usefulness.
+  - Digest remains long at eight full-text summaries; consider lowering max papers or tightening summary verbosity after subscriber feedback.
+- Next step: Let the 14:00 fallback treat this as already handled via the send-log dedupe key; continue normal daily processing tomorrow.
+
 - Task: Run daily subscription monitor.
 - Files changed: `WORKLOG.md`; ignored runtime subscriber file `subscribers/xiaoya_nao.cas.cn.json` refreshed.
 - Commands run:
